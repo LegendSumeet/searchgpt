@@ -130,6 +130,11 @@ class SearchDao extends DatabaseAccessor<AppDatabase> with _$SearchDaoMixin {
     await updateQuery;
   }
 
+  Future<String?> getSearchDataTitleById(String id) async {
+    final query = select(searchData)..where((t) => t.id.equals(id));
+    return query.map((row) => row.query).getSingleOrNull();
+  }
+
   /// Retrieves search data entries created within a specific date range.
   ///
   /// [start] - Start of date range (inclusive)

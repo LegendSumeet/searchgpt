@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:async';
 import 'dart:convert';
 
@@ -8,12 +10,8 @@ import 'package:searchgpt/database/dao/index.dart';
 import 'package:searchgpt/database/db/db.dart';
 import 'package:searchgpt/workflow/tavily.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'search_gpt_cubit.dart';
-
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ChatScreenPage extends StatelessWidget {
   final AppDatabase db;
@@ -46,7 +44,6 @@ class ChatScreenPage extends StatelessWidget {
                   child: StreamBuilder<List<SearchDatas>>(
                     stream: SearchDao(db).watchAllSearchData(),
                     builder: (context, snapshot) {
-                      // Use AnimatedSwitcher for smooth transitions between states
                       return AnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
                         child: _buildDrawerContent(context, snapshot),
@@ -57,13 +54,28 @@ class ChatScreenPage extends StatelessWidget {
               ),
               appBar: AppBar(
                 centerTitle: true,
-                title: const Text('SearchGPT'),
+                title: buildTitle(context, db),
                 elevation: 0,
               ),
               body: SafeArea(child: ChatBody(db: db)),
             ),
       ),
     );
+  }
+
+  Widget buildTitle(BuildContext context, AppDatabase db) {
+    final state = context.read<SearchGptCubit>().state;
+
+    if (state is! SearchInitial) {
+      return const Text('SearchGPT');
+    } else if (state is SetId) {
+      return SearchTitleWidget(
+        id: (state as dynamic).id,
+        searchDao: SearchDao(db),
+      );
+    } else {
+      return const Text('SearchGPT'); // Default fallback
+    }
   }
 
   Widget _buildDrawerContent(
@@ -99,8 +111,7 @@ class _SearchList extends StatelessWidget {
   final List<SearchDatas> data;
   final AppDatabase db;
 
-  const _SearchList({required this.data, required this.db, Key? key})
-    : super(key: key);
+  const _SearchList({required this.data, required this.db, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -140,8 +151,7 @@ class AnimatedListItem extends StatelessWidget {
   final int index;
   final Widget child;
 
-  const AnimatedListItem({required this.index, required this.child, Key? key})
-    : super(key: key);
+  const AnimatedListItem({required this.index, required this.child, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -164,7 +174,7 @@ class AnimatedListItem extends StatelessWidget {
 }
 
 class _ShimmerList extends StatelessWidget {
-  const _ShimmerList({Key? key}) : super(key: key);
+  const _ShimmerList({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -269,36 +279,6 @@ class _ChatBodyState extends State<ChatBody> {
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface),
-      child: Row(
-        children: [
-          Icon(
-            Icons.auto_awesome_rounded,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          const SizedBox(width: 12),
-          Text(
-            'SearchGPT',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const Spacer(),
-          IconButton(
-            icon: Icon(
-              Icons.more_vert_rounded,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            onPressed: () {},
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildWelcomeMessage(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 32, bottom: 16),
@@ -375,70 +355,6 @@ class _ChatBodyState extends State<ChatBody> {
     );
   }
 
-  Widget _buildSearchInProgress(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.person_outline,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(_currentQuery, style: Theme.of(context).textTheme.bodyLarge),
-            ],
-          ),
-          const SizedBox(height: 24),
-          _buildLoadingIndicator(context, "Searching the web..."),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLoadingIndicator(BuildContext context, String text) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Text(
-          text,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
-    );
-  }
-
   SliverList _buildSearchResultsSection(String id) {
     return SliverList(
       delegate: SliverChildListDelegate([
@@ -462,73 +378,80 @@ class _ChatBodyState extends State<ChatBody> {
     return BlocBuilder<SearchGptCubit, SearchGptState>(
       builder: (context, state) {
         final isProcessing = state is SearchInProgress || state is AiLoading;
+        final hasText = _controller.text.isNotEmpty;
 
         return Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             border: Border(
               top: BorderSide(
-                color: Theme.of(context).dividerColor.withValues(alpha: 26),
+                color: Theme.of(context).dividerColor.withOpacity(0.08),
+                width: 1,
               ),
             ),
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Expanded(
                 child: Container(
+                  constraints: const BoxConstraints(
+                    maxHeight: 150,
+                  ), // Prevent field from growing too tall
                   decoration: BoxDecoration(
                     color:
                         Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(24),
                   ),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: TextField(
-                          controller: _controller,
-                          focusNode: _focusNode,
-                          decoration: InputDecoration(
-                            hintText: 'Ask anything...',
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                            ),
-                          ),
-                          maxLines: 5,
-                          minLines: 1,
-                          onChanged: (value) => _currentQuery = value,
-                          onSubmitted: (query) => _handleSubmit(context, query),
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
+                  child: TextFormField(
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.transparent,
+                      hintText: 'Type your message...',
+                      hintStyle: Theme.of(context).textTheme.bodyLarge
+                          ?.copyWith(color: Theme.of(context).hintColor),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
                       ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.mic_none_rounded,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.camera_alt_rounded,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                        onPressed: () {
-                          _handleSubmit(context, _currentQuery);
-                        },
-                      ),
-                    ],
+                    ),
+                    maxLines: null, // Allows growing with content
+                    minLines: 1,
+                    autofocus: true,
+                    onChanged: (value) => _currentQuery = value,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                    textInputAction: TextInputAction.send,
+                    onFieldSubmitted:
+                        hasText && !isProcessing
+                            ? (_) => _handleSubmit(context, _controller.text)
+                            : null,
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              if (!isProcessing && _controller.text.isNotEmpty)
-                FloatingActionButton.small(
+              // Submit button with nice animation
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                transitionBuilder:
+                    (child, animation) =>
+                        ScaleTransition(scale: animation, child: child),
+                child: FloatingActionButton.small(
+                  elevation: 0,
+                  highlightElevation: 0,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  shape: const CircleBorder(),
+                  child: Icon(
+                    Icons.send_rounded,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    size: 20,
+                  ),
                   onPressed: () => _handleSubmit(context, _controller.text),
-                  child: const Icon(Icons.send_rounded),
                 ),
+              ),
             ],
           ),
         );
@@ -557,17 +480,11 @@ class SearchResultsWidget extends StatelessWidget {
     return StreamBuilder<SearchDatas?>(
       stream: dao.watchSearchData(id),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState == ConnectionState.waiting ||
+            snapshot.hasError ||
+            !snapshot.hasData ||
+            snapshot.data == null) {
           return _buildLoadingShimmer(context);
-        }
-        if (snapshot.hasError) {
-          return ErrorWidget(
-            error: snapshot.error.toString(),
-            onRetry: () => dao.watchSearchData(id),
-          );
-        }
-        if (!snapshot.hasData || snapshot.data == null) {
-          return const EmptyStateWidget();
         }
 
         final data = snapshot.data!;
@@ -593,10 +510,7 @@ class SearchResultsWidget extends StatelessWidget {
             ],
           );
         } catch (e) {
-          return ErrorWidget(
-            error: 'Failed to parse search results',
-            onRetry: () => dao.watchSearchData(id),
-          );
+          return _buildLoadingShimmer(context);
         }
       },
     );
@@ -616,32 +530,92 @@ class SearchResultsWidget extends StatelessWidget {
 
   Widget _buildLoadingShimmer(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Theme.of(context).colorScheme.surfaceVariant,
+      baseColor: Theme.of(
+        context,
+      ).colorScheme.surfaceContainerHighest.withOpacity(0.6),
       highlightColor: Theme.of(context).colorScheme.surface,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 24,
-            width: 160,
-            margin: const EdgeInsets.only(bottom: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(4),
+      period: const Duration(
+        milliseconds: 1500,
+      ), // Slower, more elegant animation
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Search bar placeholder
+            Container(
+              height: 48,
+              margin: const EdgeInsets.only(bottom: 32),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+              ),
             ),
-          ),
-          ...List.generate(
-            3,
-            (index) => Container(
-              height: 100,
+
+            // AI response placeholder with typing indicator effect
+            Container(
+              height: 20,
+              width: 120,
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
-          ),
-        ],
+
+            // Content placeholders with different widths to simulate text
+            ...List.generate(
+              8,
+              (index) => Container(
+                height:
+                    index % 3 == 0
+                        ? 16
+                        : 12, // Vary height to simulate different text
+                width:
+                    index % 2 == 0
+                        ? MediaQuery.of(context).size.width * 0.7
+                        : MediaQuery.of(context).size.width * 0.5,
+                margin: EdgeInsets.only(
+                  bottom: 8,
+                  left: index % 3 == 0 ? 0 : 24.0, // Indent some lines
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 32),
+
+            // Suggested questions/topics section
+            Container(
+              height: 20,
+              width: 180,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: List.generate(
+                4,
+                (index) => Container(
+                  width: 120 + (index * 40).toDouble(),
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -710,7 +684,7 @@ class ResultCard extends StatelessWidget {
                     height: 24,
                     margin: const EdgeInsets.only(right: 8),
                     decoration: BoxDecoration(
-                      color: colorScheme.surfaceVariant,
+                      color: colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     alignment: Alignment.center,
@@ -810,7 +784,7 @@ class ImageCard extends StatelessWidget {
                     top: Radius.circular(12),
                   ),
                   child: Container(
-                    color: colorScheme.surfaceVariant,
+                    color: colorScheme.surfaceContainerHighest,
                     child: Image.network(
                       image.url,
                       fit: BoxFit.cover,
@@ -870,21 +844,20 @@ class AIResultsWidget extends StatelessWidget {
     return StreamBuilder<SearchDatas?>(
       stream: dao.watchSearchData(id),
       builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        }
-        if (!snapshot.hasData) {
+        if (snapshot.connectionState == ConnectionState.waiting ||
+            snapshot.hasError ||
+            !snapshot.hasData ||
+            snapshot.data == null) {
           return _buildLoadingShimmer(context);
         }
-        final data = snapshot.data;
-        if (data == null || data.gemini == null) {
+        final data = snapshot.data!;
+        if (data.gemini == null) {
           return const SizedBox.shrink();
         }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // _buildSectionHeader(context, "AI Response"),
             Card(
               elevation: 0,
               margin: EdgeInsets.zero,
@@ -911,42 +884,158 @@ class AIResultsWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 16, 0, 12),
-      child: Text(
-        title,
-        style: Theme.of(
-          context,
-        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+  Widget _buildLoadingShimmer(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Theme.of(
+        context,
+      ).colorScheme.surfaceContainerHighest.withOpacity(0.6),
+      highlightColor: Theme.of(context).colorScheme.surface,
+      period: const Duration(milliseconds: 1800), // Smooth, report-like loading
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Report header section
+            Container(
+              height: 28,
+              width: 200,
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+
+            _buildSectionShimmer(context, titleWidth: 120),
+            _buildParagraphShimmer(context, lineCount: 3),
+
+            const SizedBox(height: 32),
+
+            _buildSectionShimmer(context, titleWidth: 140),
+            _buildBulletPointShimmer(context),
+
+            const SizedBox(height: 32),
+
+            Container(
+              height: 180,
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Theme.of(context).dividerColor.withOpacity(0.2),
+                ),
+              ),
+              child: Center(
+                child: Container(
+                  width: 100,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ),
+
+            // Conclusion section
+            _buildSectionShimmer(context, titleWidth: 100),
+            _buildParagraphShimmer(context, lineCount: 4, lastLineWidth: 0.3),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildLoadingShimmer(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: Theme.of(context).colorScheme.surfaceVariant,
-      highlightColor: Theme.of(context).colorScheme.surface,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 24,
-            width: 160,
-            margin: const EdgeInsets.only(bottom: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(4),
-            ),
+  Widget _buildSectionShimmer(
+    BuildContext context, {
+    required double titleWidth,
+  }) {
+    return Container(
+      height: 24,
+      width: titleWidth,
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(4),
+      ),
+    );
+  }
+
+  Widget _buildParagraphShimmer(
+    BuildContext context, {
+    int lineCount = 2,
+    double lastLineWidth = 0.7,
+  }) {
+    return Column(
+      children: List.generate(
+        lineCount,
+        (index) => Container(
+          height: 12,
+          width:
+              MediaQuery.of(context).size.width *
+              (index == lineCount - 1 ? lastLineWidth : 0.9),
+          margin: EdgeInsets.only(bottom: index == lineCount - 1 ? 0 : 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(2),
           ),
-          Container(
-            height: 120,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBulletPointShimmer(BuildContext context) {
+    return Column(
+      children: List.generate(
+        4,
+        (index) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 8,
+                width: 8,
+                margin: const EdgeInsets.only(top: 4, right: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    Container(
+                      height: 12,
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    if (index % 2 == 0)
+                      Container(
+                        height: 12,
+                        width: MediaQuery.of(context).size.width * 0.7,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1087,9 +1176,38 @@ class ShimmerLoading extends StatelessWidget {
     if (!isLoading) return child;
 
     return Shimmer.fromColors(
-      baseColor: Theme.of(context).colorScheme.surfaceVariant,
+      baseColor: Theme.of(context).colorScheme.surfaceContainerHighest,
       highlightColor: Theme.of(context).colorScheme.surface,
       child: child,
+    );
+  }
+}
+
+class SearchTitleWidget extends StatelessWidget {
+  final String id;
+  final SearchDao searchDao; // Assuming you have a SearchDao instance
+
+  const SearchTitleWidget({Key? key, required this.id, required this.searchDao})
+    : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String?>(
+      future: searchDao.getSearchDataTitleById(id),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator(); // Show loading indicator
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else if (!snapshot.hasData || snapshot.data == null) {
+          return const Text('No title found');
+        } else {
+          return Text(
+            snapshot.data!,
+            style: Theme.of(context).textTheme.headlineMedium,
+          );
+        }
+      },
     );
   }
 }

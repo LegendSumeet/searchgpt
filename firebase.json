@@ -1,0 +1,1 @@
+{"flutter":{"platforms":{"android":{"default":{"projectId":"search-gpt-ai","appId":"1:154710874976:android:1817dad3ac39d1f5a35c05","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"search-gpt-ai","configurations":{"android":"1:154710874976:android:1817dad3ac39d1f5a35c05","ios":"1:154710874976:ios:73ed779dd8a7ab25a35c05"}}}}}}

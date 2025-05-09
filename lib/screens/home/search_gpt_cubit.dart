@@ -2,12 +2,11 @@ import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
+// ignore: depend_on_referenced_packages
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:searchgpt/client/dio_client.dart';
 import 'package:searchgpt/config/config.dart';
 import 'package:searchgpt/database/dao/index.dart';
 import 'package:searchgpt/database/db/db.dart';
-import 'package:searchgpt/util.dart';
 import 'package:searchgpt/workflow/tavily.dart';
 import 'package:searchgpt/workflow/workflow.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';

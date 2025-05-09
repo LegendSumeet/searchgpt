@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "154710874976",
+    "project_id": "search-gpt-ai",
+    "storage_bucket": "search-gpt-ai.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:154710874976:android:1817dad3ac39d1f5a35c05",
+        "android_client_info": {
+          "package_name": "com.legendsumeet.searchgpt"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "154710874976-s872ejmrmp1r2c3ecatrar6pekq22in4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbD9VdfIqvrqSqEXePofHL0eh99oBFbzc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "154710874976-s872ejmrmp1r2c3ecatrar6pekq22in4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
