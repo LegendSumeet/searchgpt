@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "154710874976-dc5g3g4isgrmsji9d76dcb2484j07t6o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.legendsumeet.searchgpt",
+            "certificate_hash": "8ce45de2c2ef857d5cfda49f8956682de9c2b6af"
+          }
+        },
+        {
           "client_id": "154710874976-s872ejmrmp1r2c3ecatrar6pekq22in4.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,6 +37,13 @@
             {
               "client_id": "154710874976-s872ejmrmp1r2c3ecatrar6pekq22in4.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "154710874976-3guu192q8j3jtsd0r51jf20ouretimvo.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.legendsumeet.searchgpt"
+              }
             }
           ]
         }

@@ -5,6 +5,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart'
+    show MasonryGridView;
 import 'package:gpt_markdown/gpt_markdown.dart';
 import 'package:searchgpt/database/dao/index.dart';
 import 'package:searchgpt/database/db/db.dart';
@@ -13,12 +15,22 @@ import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'search_gpt_cubit.dart';
 
-class ChatScreenPage extends StatelessWidget {
+class ChatScreenPage extends StatefulWidget {
   final AppDatabase db;
   const ChatScreenPage({super.key, required this.db});
 
   @override
+  State<ChatScreenPage> createState() => _ChatScreenPageState();
+}
+
+class _ChatScreenPageState extends State<ChatScreenPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return BlocProvider(
       create: (_) => SearchGptCubit(),
       child: Builder(
@@ -39,25 +51,13 @@ class ChatScreenPage extends StatelessWidget {
                         : null,
               ),
               backgroundColor: Theme.of(context).colorScheme.surface,
-              drawer: Drawer(
-                child: SafeArea(
-                  child: StreamBuilder<List<SearchDatas>>(
-                    stream: SearchDao(db).watchAllSearchData(),
-                    builder: (context, snapshot) {
-                      return AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: _buildDrawerContent(context, snapshot),
-                      );
-                    },
-                  ),
-                ),
-              ),
+              drawer: DrawerWidget(db: widget.db),
               appBar: AppBar(
                 centerTitle: true,
-                title: buildTitle(context, db),
+                title: buildTitle(context, widget.db),
                 elevation: 0,
               ),
-              body: SafeArea(child: ChatBody(db: db)),
+              body: SafeArea(child: ChatBody(db: widget.db)),
             ),
       ),
     );
@@ -76,34 +76,6 @@ class ChatScreenPage extends StatelessWidget {
     } else {
       return const Text('SearchGPT'); // Default fallback
     }
-  }
-
-  Widget _buildDrawerContent(
-    BuildContext context,
-    AsyncSnapshot<List<SearchDatas>> snapshot,
-  ) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return const _ShimmerList(key: ValueKey('shimmer'));
-    }
-
-    if (!snapshot.hasData || snapshot.data!.isEmpty) {
-      return Center(
-        key: const ValueKey('empty'),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            "No recent searches found.",
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ),
-      );
-    }
-
-    return _SearchList(
-      key: ValueKey('list-${snapshot.data!.length}'),
-      data: snapshot.data!,
-      db: db,
-    );
   }
 }
 
@@ -635,17 +607,20 @@ class SearchResultsWidget extends StatelessWidget {
   }
 
   Widget _buildImagesSection(BuildContext context, SearchResults results) {
-    return SizedBox(
-      height: 160,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: results.images.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (_, index) {
-          final image = results.images[index];
-          return ImageCard(image: image);
-        },
-      ),
+    return MasonryGridView.count(
+      shrinkWrap: true,
+      physics:
+          const NeverScrollableScrollPhysics(), // Disable scrolling if inside another scrollable
+      crossAxisCount: 1, // Number of columns
+      mainAxisSpacing: 8, // Vertical spacing between items
+      crossAxisSpacing: 8, // Horizontal spacing between items,
+      itemCount: results.images.length,
+      itemBuilder: (context, index) {
+        final image = results.images[index];
+        return ImageCard(
+          image: image,
+        ); // Make sure ImageCard respects the image's aspect ratio
+      },
     );
   }
 }
@@ -745,8 +720,25 @@ class ResultCard extends StatelessWidget {
   }
 
   Future<void> _launchUrl(String url) async {
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    final uri = Uri.parse(url);
+
+    // Check if URL is valid and can be launched
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://$url';
+    }
+
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication, // Opens in browser
+          webOnlyWindowName: '_blank', // For web apps
+        );
+      } else {
+        throw 'Could not launch $url';
+      }
+    } catch (e) {
+      debugPrint('Error launching URL: $e');
     }
   }
 }
@@ -761,66 +753,59 @@ class ImageCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return SizedBox(
-      width: 200,
-      child: Card(
-        elevation: 0,
-        margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: colorScheme.outlineVariant, width: 1),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => _launchUrl(image.url),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image with shimmer loading
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(12),
-                  ),
-                  child: Container(
-                    color: colorScheme.surfaceContainerHighest,
-                    child: Image.network(
-                      image.url,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      loadingBuilder: (context, child, progress) {
-                        if (progress == null) return child;
-                        return ShimmerLoading(
-                          isLoading: true,
-                          child: Container(color: colorScheme.surface),
-                        );
-                      },
-                      errorBuilder:
-                          (context, error, stackTrace) => Center(
-                            child: Icon(
-                              Icons.broken_image_rounded,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                    ),
-                  ),
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: colorScheme.outlineVariant, width: 1),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => _launchUrl(image.url),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image with flexible width but fixed aspect ratio
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
+              child: Container(
+                color: colorScheme.surfaceContainerHighest,
+                child: Image.network(
+                  image.url,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, progress) {
+                    if (progress == null) return child;
+                    return ShimmerLoading(
+                      isLoading: true,
+                      child: Container(color: colorScheme.surface),
+                    );
+                  },
+                  errorBuilder:
+                      (context, error, stackTrace) => Center(
+                        child: Icon(
+                          Icons.broken_image_rounded,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                 ),
               ),
-              // Image info
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Text(
-                  image.description,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+            ),
+            // Image info
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(
+                image.description,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                 ),
+
+                overflow: TextOverflow.visible,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -847,8 +832,9 @@ class AIResultsWidget extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting ||
             snapshot.hasError ||
             !snapshot.hasData ||
-            snapshot.data == null) {
-          return _buildLoadingShimmer(context);
+            snapshot.data == null ||
+            snapshot.data?.gemini == "") {
+          return AIResponseLoading();
         }
         final data = snapshot.data!;
         if (data.gemini == null) {
@@ -1208,6 +1194,116 @@ class SearchTitleWidget extends StatelessWidget {
           );
         }
       },
+    );
+  }
+}
+
+class DrawerWidget extends StatefulWidget {
+  final AppDatabase db;
+
+  const DrawerWidget({Key? key, required this.db}) : super(key: key);
+
+  @override
+  _DrawerWidgetState createState() => _DrawerWidgetState();
+}
+
+class _DrawerWidgetState extends State<DrawerWidget>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return Drawer(
+      child: SafeArea(
+        child: StreamBuilder<List<SearchDatas>>(
+          stream: SearchDao(widget.db).watchAllSearchData(),
+          builder: (context, snapshot) {
+            return AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _buildDrawerContent(context, snapshot, widget.db),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+}
+
+Widget _buildDrawerContent(
+  BuildContext context,
+  AsyncSnapshot<List<SearchDatas>> snapshot,
+  AppDatabase db,
+) {
+  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+    return Center(
+      key: const ValueKey('empty'),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text(
+          "No recent searches found.",
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+      ),
+    );
+  }
+
+  return _SearchList(
+    key: ValueKey('list-${snapshot.data!.length}'),
+    data: snapshot.data!,
+    db: db,
+  );
+}
+
+class AIResponseLoading extends StatefulWidget {
+  const AIResponseLoading({super.key});
+
+  @override
+  State<AIResponseLoading> createState() => _AIResponseLoadingState();
+}
+
+class _AIResponseLoadingState extends State<AIResponseLoading>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(begin: 0.5, end: 1.0).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ScaleTransition(
+            scale: _animation,
+            child: const Icon(Icons.auto_awesome, size: 50),
+          ),
+          const SizedBox(height: 16),
+          const Text("AI Response Loading...", style: TextStyle(fontSize: 16)),
+          const SizedBox(height: 8),
+          const LinearProgressIndicator(
+            backgroundColor: Colors.transparent,
+            minHeight: 2,
+          ),
+        ],
+      ),
     );
   }
 }
