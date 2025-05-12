@@ -20,8 +20,22 @@ class SearchData extends Table {
   IntColumn get token => integer().named('token')();
   TextColumn get search => text().named('search').nullable()();
   TextColumn get gemini => text().named('gemini').nullable()();
-  DateTimeColumn get createdAt => dateTime().nullable()();
-  DateTimeColumn get updatedAt => dateTime().nullable()();
+  BoolColumn get isFavorite =>
+      boolean().named('is_favorite').withDefault(const Constant(false))();
+  BoolColumn get isArchived =>
+      boolean().named('is_archived').withDefault(const Constant(false))();
+  BoolColumn get isDeleted =>
+      boolean().named('is_deleted').withDefault(const Constant(false))();
+  BoolColumn get isPinned =>
+      boolean().named('is_pinned').withDefault(const Constant(false))();
+  BoolColumn get isStarred =>
+      boolean().named('is_starred').withDefault(const Constant(false))();
+  BoolColumn get isFailed =>
+      boolean().named('is_failed').withDefault(const Constant(false))();
+  DateTimeColumn get createdAt =>
+      dateTime().clientDefault(() => DateTime.now())();
+  DateTimeColumn get updatedAt =>
+      dateTime().clientDefault(() => DateTime.now())();
 
   @override
   Set<Column> get primaryKey => {id};

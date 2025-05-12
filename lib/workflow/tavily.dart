@@ -9,16 +9,19 @@ class SearchResults {
   final List<SearchResultItem> results;
   final int? numberOfResults;
   final String query;
+  final String answer;
 
   SearchResults({
     required this.images,
     required this.results,
     required this.query,
     this.numberOfResults,
+    required this.answer,
   });
 
   factory SearchResults.fromJson(Map<String, dynamic> json) {
     return SearchResults(
+      answer: json['answer'] ?? '',
       images:
           (json['images'] as List<dynamic>?)
               ?.map((item) => SearchResultImage.fromJson(item))
@@ -36,6 +39,7 @@ class SearchResults {
 
   Map<String, dynamic> toJson() {
     return {
+      'answer': answer,
       'images': images.map((e) => e.toJson()).toList(),
       'results': results.map((e) => e.toJson()).toList(),
       'number_of_results': numberOfResults,
@@ -125,13 +129,15 @@ class Tavily {
       data: {
         'api_key': apiKey,
         'query': query,
+        'topic': 'general',
         'max_results': 5,
         'search_depth': searchDepth,
         'include_images': true,
         'include_image_descriptions': true,
-        'include_answers': true,
+        'include_answer': 'advanced',
         'include_domains': includeDomains,
         'exclude_domains': excludeDomains,
+        'time_range': 'day',
       },
     );
     return SearchResults.fromJson(response);

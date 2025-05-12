@@ -3,8 +3,6 @@ import 'dart:async';
 
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:equatable/equatable.dart';
-import 'package:dartz/dartz.dart';
 import 'package:searchgpt/auth/user_extensions.dart';
 import 'auth_repository.dart';
 import 'auth_state.dart';

@@ -5,13 +5,14 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart'
-    show MasonryGridView;
+
 import 'package:gpt_markdown/gpt_markdown.dart';
+import 'package:intl/intl.dart';
 import 'package:searchgpt/database/dao/index.dart';
 import 'package:searchgpt/database/db/db.dart';
 import 'package:searchgpt/workflow/tavily.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'search_gpt_cubit.dart';
 
@@ -53,7 +54,7 @@ class _ChatScreenPageState extends State<ChatScreenPage>
               backgroundColor: Theme.of(context).colorScheme.surface,
               drawer: DrawerWidget(db: widget.db),
               appBar: AppBar(
-                centerTitle: true,
+                centerTitle: false,
                 title: buildTitle(context, widget.db),
                 elevation: 0,
               ),
@@ -66,56 +67,14 @@ class _ChatScreenPageState extends State<ChatScreenPage>
   Widget buildTitle(BuildContext context, AppDatabase db) {
     final state = context.read<SearchGptCubit>().state;
 
-    if (state is! SearchInitial) {
-      return const Text('SearchGPT');
-    } else if (state is SetId) {
+    if (state is SetId) {
       return SearchTitleWidget(
         id: (state as dynamic).id,
         searchDao: SearchDao(db),
       );
     } else {
-      return const Text('SearchGPT'); // Default fallback
+      return const Text('SearchGPT');
     }
-  }
-}
-
-class _SearchList extends StatelessWidget {
-  final List<SearchDatas> data;
-  final AppDatabase db;
-
-  const _SearchList({required this.data, required this.db, super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(8.0),
-      itemCount: data.length,
-      itemBuilder: (context, index) {
-        final search = data[index];
-        return AnimatedListItem(
-          index: index,
-          child: ListTile(
-            key: ValueKey(search.id), // Important for animations
-            dense: true,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 8.0,
-              vertical: 0.0,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            title: Text(
-              search.query,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-            ),
-            onTap: () {
-              context.read<SearchGptCubit>().setID(search.id);
-              Navigator.of(context).pop();
-            },
-          ),
-        );
-      },
-    );
   }
 }
 
@@ -145,43 +104,6 @@ class AnimatedListItem extends StatelessWidget {
   }
 }
 
-class _ShimmerList extends StatelessWidget {
-  const _ShimmerList({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: 6,
-      itemBuilder: (context, index) {
-        return AnimatedListItem(
-          index: index,
-          child: const ListTile(
-            leading: CircleAvatar(backgroundColor: Colors.grey),
-            title: SizedBox(
-              height: 12,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.grey,
-                  borderRadius: BorderRadius.all(Radius.circular(4)),
-                ),
-              ),
-            ),
-            subtitle: SizedBox(
-              height: 8,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.grey,
-                  borderRadius: BorderRadius.all(Radius.circular(4)),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
 class ChatBody extends StatefulWidget {
   final AppDatabase db;
   const ChatBody({super.key, required this.db});
@@ -194,7 +116,7 @@ class _ChatBodyState extends State<ChatBody> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
-  String _currentQuery = '';
+  String currentQuery = '';
 
   @override
   void dispose() {
@@ -229,8 +151,8 @@ class _ChatBodyState extends State<ChatBody> {
                       ),
                     ),
                     if (state is SetId) ...[
-                      _buildAiResponseSection(state.id),
                       _buildSearchResultsSection(state.id),
+                      _buildAiResponseSection(state.id),
                     ],
                     const SliverPadding(padding: EdgeInsets.only(bottom: 16)),
                   ],
@@ -252,77 +174,72 @@ class _ChatBodyState extends State<ChatBody> {
   }
 
   Widget _buildWelcomeMessage(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Padding(
-      padding: const EdgeInsets.only(top: 32, bottom: 16),
+      padding: const EdgeInsets.only(top: 40, bottom: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.auto_awesome_outlined,
-              size: 48,
-              color: Theme.of(context).colorScheme.onPrimaryContainer,
-            ),
-          ),
-          const SizedBox(height: 32),
-          Text(
-            'How can I help you today?',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              height: 1.3,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+          // Animated greeting text with subtle scale effect
+          TweenAnimationBuilder(
+            tween: Tween<double>(begin: 0.95, end: 1.0),
+            duration: const Duration(milliseconds: 300),
+            builder: (context, value, child) {
+              return Transform.scale(scale: value, child: child);
+            },
             child: Text(
-              'Ask anything or search for information across the web. I can help with research, analysis, and more.',
+              'How can I help you today?',
+              style: textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                height: 1.3,
+                color: colorScheme.onSurface.withOpacity(0.9),
+              ),
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                height: 1.5,
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Decorative divider
+          Container(
+            width: 48,
+            height: 3,
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          // Improved description text with better spacing
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                style: textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant.withOpacity(0.8),
+                  height: 1.6,
+                ),
+                children: [
+                  TextSpan(
+                    text:
+                        'Ask anything or search for information across the web. ',
+                  ),
+                  TextSpan(
+                    text: 'I can help with research, analysis, and more.',
+                    style: TextStyle(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          const SizedBox(height: 24),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              _buildSuggestionChip(context, "Best productivity tips"),
-              _buildSuggestionChip(context, "Explain quantum computing"),
-              _buildSuggestionChip(context, "Latest AI trends 2024"),
-              _buildSuggestionChip(context, "How to learn Flutter fast"),
-            ],
-          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSuggestionChip(BuildContext context, String text) {
-    return ActionChip(
-      label: Text(text),
-      onPressed: () {
-        _controller.text = text;
-        _focusNode.requestFocus();
-      },
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-      labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
-      shape: StadiumBorder(
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.outlineVariant,
-          width: 1,
-        ),
       ),
     );
   }
@@ -330,10 +247,7 @@ class _ChatBodyState extends State<ChatBody> {
   SliverList _buildSearchResultsSection(String id) {
     return SliverList(
       delegate: SliverChildListDelegate([
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: SearchResultsWidget(id: id, dao: SearchDao(widget.db)),
-        ),
+        SearchResultsWidget(id: id, dao: SearchDao(widget.db)),
       ]),
     );
   }
@@ -394,7 +308,7 @@ class _ChatBodyState extends State<ChatBody> {
                     maxLines: null, // Allows growing with content
                     minLines: 1,
                     autofocus: true,
-                    onChanged: (value) => _currentQuery = value,
+                    onChanged: (value) => currentQuery = value,
                     style: Theme.of(context).textTheme.bodyLarge,
                     textInputAction: TextInputAction.send,
                     onFieldSubmitted:
@@ -405,7 +319,6 @@ class _ChatBodyState extends State<ChatBody> {
                 ),
               ),
               const SizedBox(width: 8),
-              // Submit button with nice animation
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
                 transitionBuilder:
@@ -433,7 +346,7 @@ class _ChatBodyState extends State<ChatBody> {
 
   void _handleSubmit(BuildContext context, String query) {
     if (query.trim().isNotEmpty) {
-      _currentQuery = query;
+      currentQuery = query;
       context.read<SearchGptCubit>().search(query);
       _controller.clear();
       FocusScope.of(context).unfocus();
@@ -455,34 +368,144 @@ class SearchResultsWidget extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting ||
             snapshot.hasError ||
             !snapshot.hasData ||
-            snapshot.data == null) {
-          return _buildLoadingShimmer(context);
+            snapshot.data?.search == null ||
+            snapshot.data?.search == "" && snapshot.data?.isFailed == false) {
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Card(
+              elevation: 0,
+              margin: const EdgeInsets.all(
+                8,
+              ), // Add some margin for better spacing
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outlineVariant.withOpacity(0.5),
+                  width: 1,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    GptMarkdown(
+                      followLinkColor: true,
+                      "Searching...",
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        height: 1.6,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.8),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "This may take a moment",
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
         }
 
         final data = snapshot.data!;
+        if (data.isFailed) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.error_outline, size: 64, color: Colors.redAccent),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Oops! Something went wrong.',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'We couldn’t complete your search.\nPlease check your connection or try again.',
+                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    icon: Icon(Icons.refresh),
+                    label: Text('Retry'),
+                    onPressed: () {
+                      context.read<SearchGptCubit>().retry(data.id);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      textStyle: const TextStyle(fontSize: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
         if (data.search == null) {
           return const NoResultsWidget();
         }
 
         try {
-          final jsonMap = json.decode(data.search!);
+          final jsonMap = json.decode(
+            data.search ?? '{}',
+          ); // Added null check operator
           final SearchResults results = SearchResults.fromJson(jsonMap);
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (results.images.isNotEmpty) ...[
-                _buildSectionHeader(context, "Related Images"),
-                _buildImagesSection(context, results),
+          return Skeletonizer(
+            enabled: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (results.images.isNotEmpty) ...[
+                  _buildSectionHeader(context, "Related Images"),
+                  _buildImagesSection(context, results),
+                ],
+                if (results.results.isNotEmpty) ...[
+                  _buildSectionHeader(context, "Search Results"),
+                  _buildSearchResults(context, results),
+                ],
               ],
-              if (results.results.isNotEmpty) ...[
-                _buildSectionHeader(context, "Search Results"),
-                _buildSearchResults(context, results),
-              ],
-            ],
+            ),
           );
         } catch (e) {
-          return _buildLoadingShimmer(context);
+          // Handle JSON parsing errors
+          debugPrint('Error parsing search data: $e');
+          return const Skeletonizer(enabled: true, child: SizedBox());
         }
       },
     );
@@ -490,7 +513,7 @@ class SearchResultsWidget extends StatelessWidget {
 
   Widget _buildSectionHeader(BuildContext context, String title) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 16, 0, 12),
+      padding: const EdgeInsets.fromLTRB(12, 16, 0, 12),
       child: Text(
         title,
         style: Theme.of(
@@ -500,127 +523,33 @@ class SearchResultsWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildLoadingShimmer(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: Theme.of(
-        context,
-      ).colorScheme.surfaceContainerHighest.withOpacity(0.6),
-      highlightColor: Theme.of(context).colorScheme.surface,
-      period: const Duration(
-        milliseconds: 1500,
-      ), // Slower, more elegant animation
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Search bar placeholder
-            Container(
-              height: 48,
-              margin: const EdgeInsets.only(bottom: 32),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-              ),
-            ),
-
-            // AI response placeholder with typing indicator effect
-            Container(
-              height: 20,
-              width: 120,
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-
-            // Content placeholders with different widths to simulate text
-            ...List.generate(
-              8,
-              (index) => Container(
-                height:
-                    index % 3 == 0
-                        ? 16
-                        : 12, // Vary height to simulate different text
-                width:
-                    index % 2 == 0
-                        ? MediaQuery.of(context).size.width * 0.7
-                        : MediaQuery.of(context).size.width * 0.5,
-                margin: EdgeInsets.only(
-                  bottom: 8,
-                  left: index % 3 == 0 ? 0 : 24.0, // Indent some lines
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // Suggested questions/topics section
-            Container(
-              height: 20,
-              width: 180,
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: List.generate(
-                4,
-                (index) => Container(
-                  width: 120 + (index * 40).toDouble(),
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+  Widget _buildSearchResults(BuildContext context, SearchResults results) {
+    return SizedBox(
+      height: 200,
+      child: CarouselView(
+        padding: EdgeInsets.zero,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
+        scrollDirection: Axis.horizontal,
+        itemExtent: 267,
+        children:
+            results.results
+                .map((result) => ResultCard(result: result))
+                .toList(),
       ),
     );
   }
 
-  Widget _buildSearchResults(BuildContext context, SearchResults results) {
-    return Column(
-      children:
-          results.results
-              .map(
-                (result) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: ResultCard(result: result),
-                ),
-              )
-              .toList(),
-    );
-  }
-
   Widget _buildImagesSection(BuildContext context, SearchResults results) {
-    return MasonryGridView.count(
-      shrinkWrap: true,
-      physics:
-          const NeverScrollableScrollPhysics(), // Disable scrolling if inside another scrollable
-      crossAxisCount: 1, // Number of columns
-      mainAxisSpacing: 8, // Vertical spacing between items
-      crossAxisSpacing: 8, // Horizontal spacing between items,
-      itemCount: results.images.length,
-      itemBuilder: (context, index) {
-        final image = results.images[index];
-        return ImageCard(
-          image: image,
-        ); // Make sure ImageCard respects the image's aspect ratio
-      },
+    return SizedBox(
+      height: 200,
+      child: CarouselView(
+        padding: EdgeInsets.all(4),
+        scrollDirection: Axis.horizontal,
+        itemExtent: 280,
+        children:
+            results.images.map((image) => ImageCard(image: image)).toList(),
+      ),
     );
   }
 }
@@ -635,22 +564,14 @@ class ResultCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Card(
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: colorScheme.outlineVariant, width: 1),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => _launchUrl(result.url),
+    return InkWell(
+      onTap: () => _launchUrl(result.url),
+      child: Card.outlined(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // URL and favicon
               Row(
                 children: [
                   // Favicon placeholder
@@ -709,7 +630,7 @@ class ResultCard extends StatelessWidget {
                   color: colorScheme.onSurfaceVariant,
                   height: 1.5,
                 ),
-                maxLines: 3,
+                maxLines: 4,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
@@ -753,59 +674,31 @@ class ImageCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Card(
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: colorScheme.outlineVariant, width: 1),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => _launchUrl(image.url),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image with flexible width but fixed aspect ratio
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12),
-              ),
-              child: Container(
-                color: colorScheme.surfaceContainerHighest,
-                child: Image.network(
-                  image.url,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, progress) {
-                    if (progress == null) return child;
-                    return ShimmerLoading(
-                      isLoading: true,
-                      child: Container(color: colorScheme.surface),
-                    );
-                  },
-                  errorBuilder:
-                      (context, error, stackTrace) => Center(
-                        child: Icon(
-                          Icons.broken_image_rounded,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () => _launchUrl(image.url),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+        child: Container(
+          color: colorScheme.surfaceContainerHighest,
+          child: Image.network(
+            image.url,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, progress) {
+              if (progress == null) return child;
+              return ShimmerLoading(
+                isLoading: true,
+                child: Container(color: colorScheme.surface),
+              );
+            },
+            errorBuilder:
+                (context, error, stackTrace) => Center(
+                  child: Icon(
+                    Icons.broken_image_rounded,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
-            ),
-            // Image info
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(
-                image.description,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-
-                overflow: TextOverflow.visible,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -833,196 +726,119 @@ class AIResultsWidget extends StatelessWidget {
             snapshot.hasError ||
             !snapshot.hasData ||
             snapshot.data == null ||
-            snapshot.data?.gemini == "") {
-          return AIResponseLoading();
-        }
-        final data = snapshot.data!;
-        if (data.gemini == null) {
-          return const SizedBox.shrink();
-        }
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Card(
+            snapshot.data?.gemini == "" && snapshot.data?.isFailed == false) {
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Card(
               elevation: 0,
               margin: EdgeInsets.zero,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
                 side: BorderSide(
-                  color: Theme.of(context).colorScheme.outlineVariant,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outlineVariant.withOpacity(0.3),
                   width: 1,
                 ),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: GptMarkdown(
-                  data.gemini!,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyLarge?.copyWith(height: 1.6),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 20,
+                  horizontal: 16,
                 ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildLoadingShimmer(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: Theme.of(
-        context,
-      ).colorScheme.surfaceContainerHighest.withOpacity(0.6),
-      highlightColor: Theme.of(context).colorScheme.surface,
-      period: const Duration(milliseconds: 1800), // Smooth, report-like loading
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Report header section
-            Container(
-              height: 28,
-              width: 200,
-              margin: const EdgeInsets.only(bottom: 24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-
-            _buildSectionShimmer(context, titleWidth: 120),
-            _buildParagraphShimmer(context, lineCount: 3),
-
-            const SizedBox(height: 32),
-
-            _buildSectionShimmer(context, titleWidth: 140),
-            _buildBulletPointShimmer(context),
-
-            const SizedBox(height: 32),
-
-            Container(
-              height: 180,
-              margin: const EdgeInsets.only(bottom: 24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Theme.of(context).dividerColor.withOpacity(0.2),
-                ),
-              ),
-              child: Center(
-                child: Container(
-                  width: 100,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
-            ),
-
-            // Conclusion section
-            _buildSectionShimmer(context, titleWidth: 100),
-            _buildParagraphShimmer(context, lineCount: 4, lastLineWidth: 0.3),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionShimmer(
-    BuildContext context, {
-    required double titleWidth,
-  }) {
-    return Container(
-      height: 24,
-      width: titleWidth,
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(4),
-      ),
-    );
-  }
-
-  Widget _buildParagraphShimmer(
-    BuildContext context, {
-    int lineCount = 2,
-    double lastLineWidth = 0.7,
-  }) {
-    return Column(
-      children: List.generate(
-        lineCount,
-        (index) => Container(
-          height: 12,
-          width:
-              MediaQuery.of(context).size.width *
-              (index == lineCount - 1 ? lastLineWidth : 0.9),
-          margin: EdgeInsets.only(bottom: index == lineCount - 1 ? 0 : 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBulletPointShimmer(BuildContext context) {
-    return Column(
-      children: List.generate(
-        4,
-        (index) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: 8,
-                width: 8,
-                margin: const EdgeInsets.only(top: 4, right: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              Expanded(
-                child: Column(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      height: 12,
-                      width: double.infinity,
-                      margin: const EdgeInsets.only(bottom: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    if (index % 2 == 0)
-                      Container(
-                        height: 12,
-                        width: MediaQuery.of(context).size.width * 0.7,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(2),
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).colorScheme.primary,
                         ),
                       ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            "Generating summary...",
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyLarge?.copyWith(
+                              height: 1.4,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "We're processing your content",
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.6),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Optional: Add a cancel button if the operation can be interrupted
+                    // IconButton(
+                    //   icon: Icon(Icons.close, size: 18),
+                    //   onPressed: () => cancelOperation(),
+                    //   padding: EdgeInsets.zero,
+                    //   visualDensity: VisualDensity.compact,
+                    // ),
                   ],
                 ),
               ),
-            ],
+            ),
+          );
+        }
+        final data = snapshot.data!;
+        if (data.isFailed == true) {
+          return const SizedBox.shrink();
+        }
+        if (data.gemini == null) {
+          return const SizedBox.shrink();
+        }
+
+        return Skeletonizer(
+          enabled:
+              snapshot.connectionState == ConnectionState.waiting ||
+              snapshot.hasError ||
+              !snapshot.hasData ||
+              snapshot.data == null ||
+              snapshot.data?.gemini == "",
+          child: Card(
+            elevation: 0,
+            margin: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.outlineVariant,
+                width: 1,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: GptMarkdown(
+                followLinkColor: true,
+                data.gemini ?? '',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(height: 1.6),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -1171,28 +987,40 @@ class ShimmerLoading extends StatelessWidget {
 
 class SearchTitleWidget extends StatelessWidget {
   final String id;
-  final SearchDao searchDao; // Assuming you have a SearchDao instance
+  final SearchDao searchDao;
 
   const SearchTitleWidget({Key? key, required this.id, required this.searchDao})
     : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<String?>(
+    return FutureBuilder<String>(
       future: searchDao.getSearchDataTitleById(id),
       builder: (context, snapshot) {
+        // Handle different states
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator(); // Show loading indicator
-        } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        } else if (!snapshot.hasData || snapshot.data == null) {
-          return const Text('No title found');
-        } else {
+          return Skeletonizer(
+            enabled: true,
+            child: Text(
+              'Loading...', // Placeholder text
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+          );
+        }
+
+        if (snapshot.hasError) {
           return Text(
-            snapshot.data!,
+            'Error loading title',
             style: Theme.of(context).textTheme.headlineMedium,
           );
         }
+
+        final title = snapshot.data ?? 'SearchGPT'; // Fallback for null data
+
+        return Skeletonizer(
+          enabled: false, // Disable skeleton when we have data
+          child: Text(title, style: Theme.of(context).textTheme.titleMedium),
+        );
       },
     );
   }
@@ -1249,11 +1077,121 @@ Widget _buildDrawerContent(
     );
   }
 
+  // Group data by date
+  final groupedData = _groupByDate(snapshot.data!);
+
   return _SearchList(
     key: ValueKey('list-${snapshot.data!.length}'),
-    data: snapshot.data!,
+    groupedData: groupedData,
     db: db,
   );
+}
+
+Map<DateTime, List<SearchDatas>> _groupByDate(List<SearchDatas> data) {
+  final Map<DateTime, List<SearchDatas>> groupedData = {};
+
+  for (final item in data) {
+    // Assuming createdAt is a timestamp in seconds (like 1234723224)
+    final date = DateTime.fromMillisecondsSinceEpoch(
+      item.createdAt.millisecondsSinceEpoch,
+    );
+    final dateOnly = DateTime(date.year, date.month, date.day);
+
+    if (!groupedData.containsKey(dateOnly)) {
+      groupedData[dateOnly] = [];
+    }
+    groupedData[dateOnly]!.add(item);
+  }
+
+  // Sort by date (newest first)
+  final sortedKeys = groupedData.keys.toList()..sort((a, b) => b.compareTo(a));
+
+  final sortedMap = Map.fromEntries(
+    sortedKeys.map((key) => MapEntry(key, groupedData[key]!)),
+  );
+
+  return sortedMap;
+}
+
+class _SearchList extends StatelessWidget {
+  final Map<DateTime, List<SearchDatas>> groupedData;
+  final AppDatabase db;
+
+  const _SearchList({required this.groupedData, required this.db, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(8.0),
+      children:
+          groupedData.entries.map((entry) {
+            final date = entry.key;
+            final items = entry.value;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
+                  child: Text(
+                    _formatDate(date),
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                ...items
+                    .map(
+                      (search) => AnimatedListItem(
+                        index: items.indexOf(search),
+                        child: ListTile(
+                          key: ValueKey(search.id),
+                          dense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 8.0,
+                            vertical: 0.0,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          title: Text(
+                            search.query,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          onTap: () {
+                            context.read<SearchGptCubit>().setID(search.id);
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ),
+                    )
+                    .toList(),
+                const Divider(height: 16.0),
+              ],
+            );
+          }).toList(),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+
+    if (date == today) {
+      return 'Today';
+    } else if (date == yesterday) {
+      return 'Yesterday';
+    } else {
+      return DateFormat('MMMM d, y').format(date);
+    }
+  }
 }
 
 class AIResponseLoading extends StatefulWidget {

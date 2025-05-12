@@ -1,7 +1,6 @@
 // lib/features/auth/domain/auth_state.dart
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:searchgpt/auth/user_extensions.dart';
 
 sealed class AuthState extends Equatable {

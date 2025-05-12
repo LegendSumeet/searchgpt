@@ -58,6 +58,96 @@ class $SearchDataTable extends SearchData
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _isFavoriteMeta = const VerificationMeta(
+    'isFavorite',
+  );
+  @override
+  late final GeneratedColumn<bool> isFavorite = GeneratedColumn<bool>(
+    'is_favorite',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_favorite" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isArchivedMeta = const VerificationMeta(
+    'isArchived',
+  );
+  @override
+  late final GeneratedColumn<bool> isArchived = GeneratedColumn<bool>(
+    'is_archived',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_archived" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
+    'isDeleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
+    'is_deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isPinnedMeta = const VerificationMeta(
+    'isPinned',
+  );
+  @override
+  late final GeneratedColumn<bool> isPinned = GeneratedColumn<bool>(
+    'is_pinned',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_pinned" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isStarredMeta = const VerificationMeta(
+    'isStarred',
+  );
+  @override
+  late final GeneratedColumn<bool> isStarred = GeneratedColumn<bool>(
+    'is_starred',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_starred" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isFailedMeta = const VerificationMeta(
+    'isFailed',
+  );
+  @override
+  late final GeneratedColumn<bool> isFailed = GeneratedColumn<bool>(
+    'is_failed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_failed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -65,9 +155,10 @@ class $SearchDataTable extends SearchData
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
     'created_at',
     aliasedName,
-    true,
+    false,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
+    clientDefault: () => DateTime.now(),
   );
   static const VerificationMeta _updatedAtMeta = const VerificationMeta(
     'updatedAt',
@@ -76,9 +167,10 @@ class $SearchDataTable extends SearchData
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
     'updated_at',
     aliasedName,
-    true,
+    false,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
+    clientDefault: () => DateTime.now(),
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -87,6 +179,12 @@ class $SearchDataTable extends SearchData
     token,
     search,
     gemini,
+    isFavorite,
+    isArchived,
+    isDeleted,
+    isPinned,
+    isStarred,
+    isFailed,
     createdAt,
     updatedAt,
   ];
@@ -135,6 +233,42 @@ class $SearchDataTable extends SearchData
         gemini.isAcceptableOrUnknown(data['gemini']!, _geminiMeta),
       );
     }
+    if (data.containsKey('is_favorite')) {
+      context.handle(
+        _isFavoriteMeta,
+        isFavorite.isAcceptableOrUnknown(data['is_favorite']!, _isFavoriteMeta),
+      );
+    }
+    if (data.containsKey('is_archived')) {
+      context.handle(
+        _isArchivedMeta,
+        isArchived.isAcceptableOrUnknown(data['is_archived']!, _isArchivedMeta),
+      );
+    }
+    if (data.containsKey('is_deleted')) {
+      context.handle(
+        _isDeletedMeta,
+        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
+      );
+    }
+    if (data.containsKey('is_pinned')) {
+      context.handle(
+        _isPinnedMeta,
+        isPinned.isAcceptableOrUnknown(data['is_pinned']!, _isPinnedMeta),
+      );
+    }
+    if (data.containsKey('is_starred')) {
+      context.handle(
+        _isStarredMeta,
+        isStarred.isAcceptableOrUnknown(data['is_starred']!, _isStarredMeta),
+      );
+    }
+    if (data.containsKey('is_failed')) {
+      context.handle(
+        _isFailedMeta,
+        isFailed.isAcceptableOrUnknown(data['is_failed']!, _isFailedMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -179,14 +313,46 @@ class $SearchDataTable extends SearchData
         DriftSqlType.string,
         data['${effectivePrefix}gemini'],
       ),
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      ),
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      ),
+      isFavorite:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_favorite'],
+          )!,
+      isArchived:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_archived'],
+          )!,
+      isDeleted:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_deleted'],
+          )!,
+      isPinned:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_pinned'],
+          )!,
+      isStarred:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_starred'],
+          )!,
+      isFailed:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_failed'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
     );
   }
 
@@ -202,16 +368,28 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
   final int token;
   final String? search;
   final String? gemini;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
+  final bool isFavorite;
+  final bool isArchived;
+  final bool isDeleted;
+  final bool isPinned;
+  final bool isStarred;
+  final bool isFailed;
+  final DateTime createdAt;
+  final DateTime updatedAt;
   const SearchDatas({
     required this.id,
     required this.query,
     required this.token,
     this.search,
     this.gemini,
-    this.createdAt,
-    this.updatedAt,
+    required this.isFavorite,
+    required this.isArchived,
+    required this.isDeleted,
+    required this.isPinned,
+    required this.isStarred,
+    required this.isFailed,
+    required this.createdAt,
+    required this.updatedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -225,12 +403,14 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
     if (!nullToAbsent || gemini != null) {
       map['gemini'] = Variable<String>(gemini);
     }
-    if (!nullToAbsent || createdAt != null) {
-      map['created_at'] = Variable<DateTime>(createdAt);
-    }
-    if (!nullToAbsent || updatedAt != null) {
-      map['updated_at'] = Variable<DateTime>(updatedAt);
-    }
+    map['is_favorite'] = Variable<bool>(isFavorite);
+    map['is_archived'] = Variable<bool>(isArchived);
+    map['is_deleted'] = Variable<bool>(isDeleted);
+    map['is_pinned'] = Variable<bool>(isPinned);
+    map['is_starred'] = Variable<bool>(isStarred);
+    map['is_failed'] = Variable<bool>(isFailed);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
   }
 
@@ -243,14 +423,14 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
           search == null && nullToAbsent ? const Value.absent() : Value(search),
       gemini:
           gemini == null && nullToAbsent ? const Value.absent() : Value(gemini),
-      createdAt:
-          createdAt == null && nullToAbsent
-              ? const Value.absent()
-              : Value(createdAt),
-      updatedAt:
-          updatedAt == null && nullToAbsent
-              ? const Value.absent()
-              : Value(updatedAt),
+      isFavorite: Value(isFavorite),
+      isArchived: Value(isArchived),
+      isDeleted: Value(isDeleted),
+      isPinned: Value(isPinned),
+      isStarred: Value(isStarred),
+      isFailed: Value(isFailed),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
     );
   }
 
@@ -265,8 +445,14 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
       token: serializer.fromJson<int>(json['token']),
       search: serializer.fromJson<String?>(json['search']),
       gemini: serializer.fromJson<String?>(json['gemini']),
-      createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      isFavorite: serializer.fromJson<bool>(json['isFavorite']),
+      isArchived: serializer.fromJson<bool>(json['isArchived']),
+      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
+      isPinned: serializer.fromJson<bool>(json['isPinned']),
+      isStarred: serializer.fromJson<bool>(json['isStarred']),
+      isFailed: serializer.fromJson<bool>(json['isFailed']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
   }
   @override
@@ -278,8 +464,14 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
       'token': serializer.toJson<int>(token),
       'search': serializer.toJson<String?>(search),
       'gemini': serializer.toJson<String?>(gemini),
-      'createdAt': serializer.toJson<DateTime?>(createdAt),
-      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'isFavorite': serializer.toJson<bool>(isFavorite),
+      'isArchived': serializer.toJson<bool>(isArchived),
+      'isDeleted': serializer.toJson<bool>(isDeleted),
+      'isPinned': serializer.toJson<bool>(isPinned),
+      'isStarred': serializer.toJson<bool>(isStarred),
+      'isFailed': serializer.toJson<bool>(isFailed),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
   }
 
@@ -289,16 +481,28 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
     int? token,
     Value<String?> search = const Value.absent(),
     Value<String?> gemini = const Value.absent(),
-    Value<DateTime?> createdAt = const Value.absent(),
-    Value<DateTime?> updatedAt = const Value.absent(),
+    bool? isFavorite,
+    bool? isArchived,
+    bool? isDeleted,
+    bool? isPinned,
+    bool? isStarred,
+    bool? isFailed,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) => SearchDatas(
     id: id ?? this.id,
     query: query ?? this.query,
     token: token ?? this.token,
     search: search.present ? search.value : this.search,
     gemini: gemini.present ? gemini.value : this.gemini,
-    createdAt: createdAt.present ? createdAt.value : this.createdAt,
-    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+    isFavorite: isFavorite ?? this.isFavorite,
+    isArchived: isArchived ?? this.isArchived,
+    isDeleted: isDeleted ?? this.isDeleted,
+    isPinned: isPinned ?? this.isPinned,
+    isStarred: isStarred ?? this.isStarred,
+    isFailed: isFailed ?? this.isFailed,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
   );
   SearchDatas copyWithCompanion(SearchDataCompanion data) {
     return SearchDatas(
@@ -307,6 +511,14 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
       token: data.token.present ? data.token.value : this.token,
       search: data.search.present ? data.search.value : this.search,
       gemini: data.gemini.present ? data.gemini.value : this.gemini,
+      isFavorite:
+          data.isFavorite.present ? data.isFavorite.value : this.isFavorite,
+      isArchived:
+          data.isArchived.present ? data.isArchived.value : this.isArchived,
+      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
+      isPinned: data.isPinned.present ? data.isPinned.value : this.isPinned,
+      isStarred: data.isStarred.present ? data.isStarred.value : this.isStarred,
+      isFailed: data.isFailed.present ? data.isFailed.value : this.isFailed,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -320,6 +532,12 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
           ..write('token: $token, ')
           ..write('search: $search, ')
           ..write('gemini: $gemini, ')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('isArchived: $isArchived, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('isPinned: $isPinned, ')
+          ..write('isStarred: $isStarred, ')
+          ..write('isFailed: $isFailed, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -327,8 +545,21 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, query, token, search, gemini, createdAt, updatedAt);
+  int get hashCode => Object.hash(
+    id,
+    query,
+    token,
+    search,
+    gemini,
+    isFavorite,
+    isArchived,
+    isDeleted,
+    isPinned,
+    isStarred,
+    isFailed,
+    createdAt,
+    updatedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -338,6 +569,12 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
           other.token == this.token &&
           other.search == this.search &&
           other.gemini == this.gemini &&
+          other.isFavorite == this.isFavorite &&
+          other.isArchived == this.isArchived &&
+          other.isDeleted == this.isDeleted &&
+          other.isPinned == this.isPinned &&
+          other.isStarred == this.isStarred &&
+          other.isFailed == this.isFailed &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -348,8 +585,14 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
   final Value<int> token;
   final Value<String?> search;
   final Value<String?> gemini;
-  final Value<DateTime?> createdAt;
-  final Value<DateTime?> updatedAt;
+  final Value<bool> isFavorite;
+  final Value<bool> isArchived;
+  final Value<bool> isDeleted;
+  final Value<bool> isPinned;
+  final Value<bool> isStarred;
+  final Value<bool> isFailed;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
   final Value<int> rowid;
   const SearchDataCompanion({
     this.id = const Value.absent(),
@@ -357,6 +600,12 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
     this.token = const Value.absent(),
     this.search = const Value.absent(),
     this.gemini = const Value.absent(),
+    this.isFavorite = const Value.absent(),
+    this.isArchived = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.isPinned = const Value.absent(),
+    this.isStarred = const Value.absent(),
+    this.isFailed = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -367,6 +616,12 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
     required int token,
     this.search = const Value.absent(),
     this.gemini = const Value.absent(),
+    this.isFavorite = const Value.absent(),
+    this.isArchived = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.isPinned = const Value.absent(),
+    this.isStarred = const Value.absent(),
+    this.isFailed = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -379,6 +634,12 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
     Expression<int>? token,
     Expression<String>? search,
     Expression<String>? gemini,
+    Expression<bool>? isFavorite,
+    Expression<bool>? isArchived,
+    Expression<bool>? isDeleted,
+    Expression<bool>? isPinned,
+    Expression<bool>? isStarred,
+    Expression<bool>? isFailed,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -389,6 +650,12 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
       if (token != null) 'token': token,
       if (search != null) 'search': search,
       if (gemini != null) 'gemini': gemini,
+      if (isFavorite != null) 'is_favorite': isFavorite,
+      if (isArchived != null) 'is_archived': isArchived,
+      if (isDeleted != null) 'is_deleted': isDeleted,
+      if (isPinned != null) 'is_pinned': isPinned,
+      if (isStarred != null) 'is_starred': isStarred,
+      if (isFailed != null) 'is_failed': isFailed,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -401,8 +668,14 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
     Value<int>? token,
     Value<String?>? search,
     Value<String?>? gemini,
-    Value<DateTime?>? createdAt,
-    Value<DateTime?>? updatedAt,
+    Value<bool>? isFavorite,
+    Value<bool>? isArchived,
+    Value<bool>? isDeleted,
+    Value<bool>? isPinned,
+    Value<bool>? isStarred,
+    Value<bool>? isFailed,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
     Value<int>? rowid,
   }) {
     return SearchDataCompanion(
@@ -411,6 +684,12 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
       token: token ?? this.token,
       search: search ?? this.search,
       gemini: gemini ?? this.gemini,
+      isFavorite: isFavorite ?? this.isFavorite,
+      isArchived: isArchived ?? this.isArchived,
+      isDeleted: isDeleted ?? this.isDeleted,
+      isPinned: isPinned ?? this.isPinned,
+      isStarred: isStarred ?? this.isStarred,
+      isFailed: isFailed ?? this.isFailed,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -435,6 +714,24 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
     if (gemini.present) {
       map['gemini'] = Variable<String>(gemini.value);
     }
+    if (isFavorite.present) {
+      map['is_favorite'] = Variable<bool>(isFavorite.value);
+    }
+    if (isArchived.present) {
+      map['is_archived'] = Variable<bool>(isArchived.value);
+    }
+    if (isDeleted.present) {
+      map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
+    if (isPinned.present) {
+      map['is_pinned'] = Variable<bool>(isPinned.value);
+    }
+    if (isStarred.present) {
+      map['is_starred'] = Variable<bool>(isStarred.value);
+    }
+    if (isFailed.present) {
+      map['is_failed'] = Variable<bool>(isFailed.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -455,6 +752,12 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
           ..write('token: $token, ')
           ..write('search: $search, ')
           ..write('gemini: $gemini, ')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('isArchived: $isArchived, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('isPinned: $isPinned, ')
+          ..write('isStarred: $isStarred, ')
+          ..write('isFailed: $isFailed, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -482,8 +785,14 @@ typedef $$SearchDataTableCreateCompanionBuilder =
       required int token,
       Value<String?> search,
       Value<String?> gemini,
-      Value<DateTime?> createdAt,
-      Value<DateTime?> updatedAt,
+      Value<bool> isFavorite,
+      Value<bool> isArchived,
+      Value<bool> isDeleted,
+      Value<bool> isPinned,
+      Value<bool> isStarred,
+      Value<bool> isFailed,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
       Value<int> rowid,
     });
 typedef $$SearchDataTableUpdateCompanionBuilder =
@@ -493,8 +802,14 @@ typedef $$SearchDataTableUpdateCompanionBuilder =
       Value<int> token,
       Value<String?> search,
       Value<String?> gemini,
-      Value<DateTime?> createdAt,
-      Value<DateTime?> updatedAt,
+      Value<bool> isFavorite,
+      Value<bool> isArchived,
+      Value<bool> isDeleted,
+      Value<bool> isPinned,
+      Value<bool> isStarred,
+      Value<bool> isFailed,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
       Value<int> rowid,
     });
 
@@ -529,6 +844,36 @@ class $$SearchDataTableFilterComposer
 
   ColumnFilters<String> get gemini => $composableBuilder(
     column: $table.gemini,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isFavorite => $composableBuilder(
+    column: $table.isFavorite,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isPinned => $composableBuilder(
+    column: $table.isPinned,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isStarred => $composableBuilder(
+    column: $table.isStarred,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isFailed => $composableBuilder(
+    column: $table.isFailed,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -577,6 +922,36 @@ class $$SearchDataTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isFavorite => $composableBuilder(
+    column: $table.isFavorite,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isPinned => $composableBuilder(
+    column: $table.isPinned,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isStarred => $composableBuilder(
+    column: $table.isStarred,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isFailed => $composableBuilder(
+    column: $table.isFailed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -611,6 +986,28 @@ class $$SearchDataTableAnnotationComposer
 
   GeneratedColumn<String> get gemini =>
       $composableBuilder(column: $table.gemini, builder: (column) => column);
+
+  GeneratedColumn<bool> get isFavorite => $composableBuilder(
+    column: $table.isFavorite,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isDeleted =>
+      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
+
+  GeneratedColumn<bool> get isPinned =>
+      $composableBuilder(column: $table.isPinned, builder: (column) => column);
+
+  GeneratedColumn<bool> get isStarred =>
+      $composableBuilder(column: $table.isStarred, builder: (column) => column);
+
+  GeneratedColumn<bool> get isFailed =>
+      $composableBuilder(column: $table.isFailed, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -655,8 +1052,14 @@ class $$SearchDataTableTableManager
                 Value<int> token = const Value.absent(),
                 Value<String?> search = const Value.absent(),
                 Value<String?> gemini = const Value.absent(),
-                Value<DateTime?> createdAt = const Value.absent(),
-                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<bool> isFavorite = const Value.absent(),
+                Value<bool> isArchived = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<bool> isPinned = const Value.absent(),
+                Value<bool> isStarred = const Value.absent(),
+                Value<bool> isFailed = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SearchDataCompanion(
                 id: id,
@@ -664,6 +1067,12 @@ class $$SearchDataTableTableManager
                 token: token,
                 search: search,
                 gemini: gemini,
+                isFavorite: isFavorite,
+                isArchived: isArchived,
+                isDeleted: isDeleted,
+                isPinned: isPinned,
+                isStarred: isStarred,
+                isFailed: isFailed,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -675,8 +1084,14 @@ class $$SearchDataTableTableManager
                 required int token,
                 Value<String?> search = const Value.absent(),
                 Value<String?> gemini = const Value.absent(),
-                Value<DateTime?> createdAt = const Value.absent(),
-                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<bool> isFavorite = const Value.absent(),
+                Value<bool> isArchived = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<bool> isPinned = const Value.absent(),
+                Value<bool> isStarred = const Value.absent(),
+                Value<bool> isFailed = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SearchDataCompanion.insert(
                 id: id,
@@ -684,6 +1099,12 @@ class $$SearchDataTableTableManager
                 token: token,
                 search: search,
                 gemini: gemini,
+                isFavorite: isFavorite,
+                isArchived: isArchived,
+                isDeleted: isDeleted,
+                isPinned: isPinned,
+                isStarred: isStarred,
+                isFailed: isFailed,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

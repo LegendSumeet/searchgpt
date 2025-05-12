@@ -18,12 +18,27 @@ import 'package:google_fonts/google_fonts.dart';
 ///   darkTheme: AppTheme.dark,
 /// );
 
+/// The [AppTheme] defines light and dark themes for the app.
+///
+/// Theme setup for FlexColorScheme package v8.
+/// Use same major flex_color_scheme package version. If you use a
+/// lower minor version, some properties may not be supported.
+/// In that case, remove them after copying this theme to your
+/// app or upgrade the package to version 8.2.0.
+///
+/// Use it in a [MaterialApp] like this:
+///
+/// MaterialApp(
+///   theme: AppTheme.light,
+///   darkTheme: AppTheme.dark,
+/// );
 abstract final class AppTheme {
   // The FlexColorScheme defined light mode ThemeData.
   static ThemeData light = FlexThemeData.light(
     fontFamily: GoogleFonts.lexend().fontFamily,
+
     // Using FlexColorScheme built-in FlexScheme enum based colors
-    scheme: FlexScheme.sepia,
+    scheme: FlexScheme.blackWhite,
     // Input color modifiers.
     swapLegacyOnMaterial3: true,
     // Surface color adjustments.
@@ -97,8 +112,9 @@ abstract final class AppTheme {
   // The FlexColorScheme defined dark mode ThemeData.
   static ThemeData dark = FlexThemeData.dark(
     fontFamily: GoogleFonts.lexend().fontFamily,
+
     // Using FlexColorScheme built-in FlexScheme enum based colors.
-    scheme: FlexScheme.sepia,
+    scheme: FlexScheme.blackWhite,
     // Input color modifiers.
     swapLegacyOnMaterial3: true,
     // Surface color adjustments.
