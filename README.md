@@ -1,7 +1,3 @@
-Here’s a streamlined `README.md` for your **SearchGPT** app, assuming it's a **Flutter/Dart-based mobile app** (no Python on device) with AI-powered search features:
-
----
-
 # SearchGPT 🔍✨
 **AI-Powered Search & Summarization for Mobile**
 
