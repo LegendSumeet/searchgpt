@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
           home: AuthWrapper(
             db: db,
             authenticated: ChatScreenPage(db: db),
-            unauthenticated: const LoginScreen(),
+            unauthenticated: ChatScreenPage(db: db),
           ),
         ),
       ),

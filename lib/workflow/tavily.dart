@@ -130,7 +130,7 @@ class Tavily {
         'api_key': apiKey,
         'query': query,
         'topic': 'general',
-        'max_results': 5,
+        'max_results': 15,
         'search_depth': searchDepth,
         'include_images': true,
         'include_image_descriptions': true,

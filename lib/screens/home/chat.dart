@@ -527,6 +527,9 @@ class SearchResultsWidget extends StatelessWidget {
     return SizedBox(
       height: 200,
       child: CarouselView(
+        onTap: (index) async {
+          await launchUrlWeb(results.results[index].url);
+        },
         padding: EdgeInsets.zero,
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
@@ -544,6 +547,9 @@ class SearchResultsWidget extends StatelessWidget {
     return SizedBox(
       height: 200,
       child: CarouselView(
+        onTap: (index) async {
+          await launchUrlWeb(results.images[index].url);
+        },
         padding: EdgeInsets.all(4),
         scrollDirection: Axis.horizontal,
         itemExtent: 280,
@@ -564,103 +570,100 @@ class ResultCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return InkWell(
-      onTap: () => _launchUrl(result.url),
-      child: Card.outlined(
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  // Favicon placeholder
-                  Container(
-                    width: 24,
-                    height: 24,
-                    margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      result.url
-                          .replaceAll('https://', '')
-                          .replaceAll('http://', '')
-                          .replaceAll('www.', '')
-                          .substring(0, 1)
-                          .toUpperCase(),
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                      ),
+    return Card.outlined(
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                // Favicon placeholder
+                Container(
+                  width: 24,
+                  height: 24,
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    result.url
+                        .replaceAll('https://', '')
+                        .replaceAll('http://', '')
+                        .replaceAll('www.', '')
+                        .substring(0, 1)
+                        .toUpperCase(),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  // Domain
-                  Expanded(
-                    child: Text(
-                      Uri.parse(result.url).host.replaceFirst('www.', ''),
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                ),
+                // Domain
+                Expanded(
+                  child: Text(
+                    Uri.parse(result.url).host.replaceFirst('www.', ''),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Title
-              Text(
-                result.title,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  height: 1.3,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
+              ],
+            ),
+            const SizedBox(height: 12),
 
-              // Content snippet
-              Text(
-                result.content,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  height: 1.5,
-                ),
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
+            // Title
+            Text(
+              result.title,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                height: 1.3,
               ),
-            ],
-          ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+
+            // Content snippet
+            Text(
+              result.content,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                height: 1.5,
+              ),
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );
   }
+}
 
-  Future<void> _launchUrl(String url) async {
-    final uri = Uri.parse(url);
+Future<void> launchUrlWeb(String url) async {
+  final uri = Uri.parse(url);
 
-    // Check if URL is valid and can be launched
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = 'https://$url';
+  // Check if URL is valid and can be launched
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'https://$url';
+  }
+
+  try {
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication, // Opens in browser
+        webOnlyWindowName: '_blank', // For web apps
+      );
+    } else {
+      throw 'Could not launch $url';
     }
-
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication, // Opens in browser
-          webOnlyWindowName: '_blank', // For web apps
-        );
-      } else {
-        throw 'Could not launch $url';
-      }
-    } catch (e) {
-      debugPrint('Error launching URL: $e');
-    }
+  } catch (e) {
+    debugPrint('Error launching URL: $e');
   }
 }
 
@@ -674,31 +677,27 @@ class ImageCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: () => _launchUrl(image.url),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-        child: Container(
-          color: colorScheme.surfaceContainerHighest,
-          child: Image.network(
-            image.url,
-            fit: BoxFit.cover,
-            loadingBuilder: (context, child, progress) {
-              if (progress == null) return child;
-              return ShimmerLoading(
-                isLoading: true,
-                child: Container(color: colorScheme.surface),
-              );
-            },
-            errorBuilder:
-                (context, error, stackTrace) => Center(
-                  child: Icon(
-                    Icons.broken_image_rounded,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+      child: Container(
+        color: colorScheme.surfaceContainerHighest,
+        child: Image.network(
+          image.url,
+          fit: BoxFit.cover,
+          loadingBuilder: (context, child, progress) {
+            if (progress == null) return child;
+            return ShimmerLoading(
+              isLoading: true,
+              child: Container(color: colorScheme.surface),
+            );
+          },
+          errorBuilder:
+              (context, error, stackTrace) => Center(
+                child: Icon(
+                  Icons.broken_image_rounded,
+                  color: colorScheme.onSurfaceVariant,
                 ),
-          ),
+              ),
         ),
       ),
     );
@@ -788,13 +787,6 @@ class AIResultsWidget extends StatelessWidget {
                         ],
                       ),
                     ),
-                    // Optional: Add a cancel button if the operation can be interrupted
-                    // IconButton(
-                    //   icon: Icon(Icons.close, size: 18),
-                    //   onPressed: () => cancelOperation(),
-                    //   padding: EdgeInsets.zero,
-                    //   visualDensity: VisualDensity.compact,
-                    // ),
                   ],
                 ),
               ),
@@ -829,6 +821,9 @@ class AIResultsWidget extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: GptMarkdown(
+                onLinkTab: (url, text) async {
+                  await launchUrlWeb(url);
+                },
                 followLinkColor: true,
                 data.gemini ?? '',
                 style: Theme.of(
