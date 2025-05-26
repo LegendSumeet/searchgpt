@@ -5,7 +5,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:searchgpt/auth/auth_bloc.dart';
 import 'package:searchgpt/auth/auth_event.dart';
 import 'package:searchgpt/auth/auth_repository.dart';
-import 'package:searchgpt/auth/auth_screen.dart';
 import 'package:searchgpt/auth/auth_wrapper.dart';
 import 'package:searchgpt/database/db/db.dart';
 import 'package:searchgpt/screens/home/chat.dart';
@@ -39,10 +38,9 @@ class MyApp extends StatelessWidget {
     return RepositoryProvider(
       create: (context) => AuthRepository(),
       child: BlocProvider(
-        create:
-            (context) =>
-                AuthBloc(authRepository: context.read<AuthRepository>())
-                  ..add(const AuthStatusChecked()),
+        create: (context) =>
+            AuthBloc(authRepository: context.read<AuthRepository>())
+              ..add(const AuthStatusChecked()),
         child: MaterialApp(
           title: 'Search GPT',
           theme: AppTheme.light,

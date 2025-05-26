@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -10,6 +11,7 @@ import 'package:gpt_markdown/gpt_markdown.dart';
 import 'package:intl/intl.dart';
 import 'package:searchgpt/database/dao/index.dart';
 import 'package:searchgpt/database/db/db.dart';
+import 'package:searchgpt/screens/home/image.dart';
 import 'package:searchgpt/workflow/tavily.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -35,31 +37,29 @@ class _ChatScreenPageState extends State<ChatScreenPage>
     return BlocProvider(
       create: (_) => SearchGptCubit(),
       child: Builder(
-        builder:
-            (context) => Scaffold(
-              floatingActionButton: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child:
-                    context.watch<SearchGptCubit>().state is SearchInitial ==
-                            false
-                        ? FloatingActionButton(
-                          key: const ValueKey('fab'),
-                          onPressed: () {
-                            context.read<SearchGptCubit>().setInitial();
-                          },
-                          child: const Icon(Icons.auto_awesome),
-                        )
-                        : null,
-              ),
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              drawer: DrawerWidget(db: widget.db),
-              appBar: AppBar(
-                centerTitle: false,
-                title: buildTitle(context, widget.db),
-                elevation: 0,
-              ),
-              body: SafeArea(child: ChatBody(db: widget.db)),
-            ),
+        builder: (context) => Scaffold(
+          floatingActionButton: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child:
+                context.watch<SearchGptCubit>().state is SearchInitial == false
+                ? FloatingActionButton(
+                    key: const ValueKey('fab'),
+                    onPressed: () {
+                      context.read<SearchGptCubit>().setInitial();
+                    },
+                    child: const Icon(Icons.auto_awesome),
+                  )
+                : null,
+          ),
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          drawer: DrawerWidget(db: widget.db),
+          appBar: AppBar(
+            centerTitle: false,
+            title: buildTitle(context, widget.db),
+            elevation: 0,
+          ),
+          body: SafeArea(child: ChatBody(db: widget.db)),
+        ),
       ),
     );
   }
@@ -152,7 +152,12 @@ class _ChatBodyState extends State<ChatBody> {
                     ),
                     if (state is SetId) ...[
                       _buildSearchResultsSection(state.id),
-                      _buildAiResponseSection(state.id),
+                      SliverToBoxAdapter(
+                        child: AICombinedResultsWidget(
+                          id: state.id,
+                          dao: SearchDao(widget.db),
+                        ),
+                      ),
                     ],
                     const SliverPadding(padding: EdgeInsets.only(bottom: 16)),
                   ],
@@ -182,49 +187,172 @@ class _ChatBodyState extends State<ChatBody> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Animated greeting text with subtle scale effect
-          TweenAnimationBuilder(
-            tween: Tween<double>(begin: 0.95, end: 1.0),
-            duration: const Duration(milliseconds: 300),
-            builder: (context, value, child) {
-              return Transform.scale(scale: value, child: child);
-            },
-            child: Text(
-              'How can I help you today?',
-              style: textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                height: 1.3,
-                color: colorScheme.onSurface.withOpacity(0.9),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
+          // Animated gradient avatar with subtle floating effect
+          _buildAnimatedAvatar(context),
+          const SizedBox(height: 24),
 
-          const SizedBox(height: 16),
+          // Enhanced greeting text with staggered animation
+          _buildAnimatedGreetingText(context, colorScheme, textTheme),
+          const SizedBox(height: 20),
 
-          // Decorative divider
-          Container(
-            width: 48,
-            height: 3,
-            margin: const EdgeInsets.only(bottom: 16),
+          // Modern decorative divider with animation
+          _buildAnimatedDivider(colorScheme),
+          const SizedBox(height: 20),
+
+          // Improved description text with better typography
+          _buildDescriptionText(context, colorScheme, textTheme),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnimatedAvatar(BuildContext context) {
+    return TweenAnimationBuilder(
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeOutBack,
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: value,
+          child: Container(
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
-              color: colorScheme.primary.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(2),
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).colorScheme.secondary,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                  blurRadius: 15,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.auto_awesome_rounded,
+              size: 40,
+              color: Theme.of(context).colorScheme.onPrimary,
             ),
           ),
+        );
+      },
+    );
+  }
 
-          // Improved description text with better spacing
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
+  Widget _buildAnimatedGreetingText(
+    BuildContext context,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    return Column(
+      children: [
+        TweenAnimationBuilder(
+          tween: Tween<double>(begin: 0.95, end: 1.0),
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutCubic,
+          builder: (context, value, child) {
+            return Transform.scale(
+              scale: value,
+              child: Opacity(opacity: value, child: child),
+            );
+          },
+          child: Text(
+            'How can I help you today?',
+            style: textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              height: 1.2,
+              color: colorScheme.onSurface,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TweenAnimationBuilder(
+          tween: Tween<double>(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 600),
+          builder: (context, value, child) {
+            return Opacity(
+              opacity: value,
+              child: Transform.translate(
+                offset: Offset(0, 10 * (1 - value)),
+                child: child,
+              ),
+            );
+          },
+          child: Text(
+            'Welcome back!',
+            style: textTheme.titleMedium?.copyWith(
+              color: colorScheme.onSurface.withOpacity(0.7),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAnimatedDivider(ColorScheme colorScheme) {
+    return TweenAnimationBuilder(
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 800),
+      curve: Curves.easeOutQuart,
+      builder: (context, value, child) {
+        return SizedBox(width: 80 * value, child: child);
+      },
+      child: Container(
+        height: 4,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              colorScheme.primary.withOpacity(0.8),
+              colorScheme.secondary.withOpacity(0.8),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(4),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDescriptionText(
+    BuildContext context,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        children: [
+          TweenAnimationBuilder(
+            tween: Tween<double>(begin: 0, end: 1),
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeOut,
+            builder: (context, value, child) {
+              return Opacity(
+                opacity: value,
+                child: Transform.translate(
+                  offset: Offset(0, 20 * (1 - value)),
+                  child: child,
+                ),
+              );
+            },
             child: RichText(
               textAlign: TextAlign.center,
               text: TextSpan(
                 style: textTheme.bodyLarge?.copyWith(
-                  color: colorScheme.onSurfaceVariant.withOpacity(0.8),
+                  color: colorScheme.onSurfaceVariant.withOpacity(0.9),
                   height: 1.6,
                 ),
                 children: [
-                  TextSpan(
+                  const TextSpan(
                     text:
                         'Ask anything or search for information across the web. ',
                   ),
@@ -232,7 +360,7 @@ class _ChatBodyState extends State<ChatBody> {
                     text: 'I can help with research, analysis, and more.',
                     style: TextStyle(
                       color: colorScheme.primary,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -252,102 +380,142 @@ class _ChatBodyState extends State<ChatBody> {
     );
   }
 
-  SliverList _buildAiResponseSection(String id) {
-    return SliverList(
-      delegate: SliverChildListDelegate([
-        AIResultsWidget(id: id, dao: SearchDao(widget.db)),
-      ]),
-    );
-  }
+  final List<String> _languages = ['English', 'Hindi'];
+
+  String _selectedLang = 'English';
 
   Widget _buildInputArea(BuildContext context) {
     return BlocBuilder<SearchGptCubit, SearchGptState>(
       builder: (context, state) {
         final isProcessing = state is SearchInProgress || state is AiLoading;
         final hasText = _controller.text.isNotEmpty;
+        final theme = Theme.of(context);
 
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            border: Border(
-              top: BorderSide(
-                color: Theme.of(context).dividerColor.withOpacity(0.08),
-                width: 1,
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: _languages.map((lang) {
+                    final isSelected = _selectedLang == lang;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(lang),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() {
+                              _selectedLang = lang;
+                            });
+                          }
+                        },
+                        selectedColor: theme.colorScheme.primaryContainer,
+                        backgroundColor: theme.colorScheme.surfaceVariant,
+                        labelStyle: TextStyle(
+                          color: isSelected
+                              ? theme.colorScheme.onPrimaryContainer
+                              : theme.colorScheme.onSurfaceVariant,
+                        ),
+                        shape: StadiumBorder(),
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
             ),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: Container(
-                  constraints: const BoxConstraints(
-                    maxHeight: 150,
-                  ), // Prevent field from growing too tall
-                  decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(24),
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                border: Border(
+                  top: BorderSide(
+                    color: theme.dividerColor.withOpacity(0.08),
+                    width: 1,
                   ),
-                  child: TextFormField(
-                    controller: _controller,
-                    focusNode: _focusNode,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.transparent,
-                      hintText: 'Type your message...',
-                      hintStyle: Theme.of(context).textTheme.bodyLarge
-                          ?.copyWith(color: Theme.of(context).hintColor),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 16,
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Container(
+                      constraints: const BoxConstraints(maxHeight: 150),
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: TextFormField(
+                        controller: _controller,
+                        focusNode: _focusNode,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.transparent,
+                          hintText: 'Type your message...',
+                          hintStyle: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(color: Theme.of(context).hintColor),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 16,
+                          ),
+                        ),
+                        maxLines: null,
+                        minLines: 1,
+                        autofocus: true,
+                        onChanged: (value) => currentQuery = value,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                        textInputAction: TextInputAction.send,
+                        onFieldSubmitted: hasText && !isProcessing
+                            ? (_) => _handleSubmit(
+                                context,
+                                _controller.text,
+                                _selectedLang,
+                              )
+                            : null,
                       ),
                     ),
-                    maxLines: null, // Allows growing with content
-                    minLines: 1,
-                    autofocus: true,
-                    onChanged: (value) => currentQuery = value,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                    textInputAction: TextInputAction.send,
-                    onFieldSubmitted:
-                        hasText && !isProcessing
-                            ? (_) => _handleSubmit(context, _controller.text)
-                            : null,
                   ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                transitionBuilder:
-                    (child, animation) =>
-                        ScaleTransition(scale: animation, child: child),
-                child: FloatingActionButton.small(
-                  elevation: 0,
-                  highlightElevation: 0,
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  shape: const CircleBorder(),
-                  child: Icon(
-                    Icons.send_rounded,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    size: 20,
+                  const SizedBox(width: 8),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: FloatingActionButton.small(
+                      elevation: 0,
+                      backgroundColor: theme.colorScheme.primary,
+                      shape: const CircleBorder(),
+                      onPressed: () => _handleSubmit(
+                        context,
+                        _controller.text,
+                        _selectedLang,
+                      ),
+
+                      child: Icon(
+                        Icons.send_rounded,
+                        color: theme.colorScheme.onPrimary,
+                        size: 20,
+                      ),
+                    ),
                   ),
-                  onPressed: () => _handleSubmit(context, _controller.text),
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
   }
 
-  void _handleSubmit(BuildContext context, String query) {
+  void _handleSubmit(BuildContext context, String query, String language) {
     if (query.trim().isNotEmpty) {
       currentQuery = query;
-      context.read<SearchGptCubit>().search(query);
+      context.read<SearchGptCubit>().search(query, language);
       _controller.clear();
       FocusScope.of(context).unfocus();
     }
@@ -535,26 +703,78 @@ class SearchResultsWidget extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
         scrollDirection: Axis.horizontal,
         itemExtent: 267,
-        children:
-            results.results
-                .map((result) => ResultCard(result: result))
-                .toList(),
+        children: results.results
+            .map((result) => ResultCard(result: result))
+            .toList(),
       ),
     );
   }
 
   Widget _buildImagesSection(BuildContext context, SearchResults results) {
     return SizedBox(
-      height: 200,
-      child: CarouselView(
-        onTap: (index) async {
-          await launchUrlWeb(results.images[index].url);
+      height: 220,
+      child: PageView.builder(
+        controller: PageController(viewportFraction: 1.0),
+        itemCount: results.images.length,
+        itemBuilder: (context, index) {
+          final image = results.images[index];
+          return _ImageCard(
+            image: image,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => FullscreenImageViewer(
+                    images: results.images,
+                    initialIndex: index,
+                  ),
+                ),
+              );
+            },
+          );
         },
-        padding: EdgeInsets.all(4),
-        scrollDirection: Axis.horizontal,
-        itemExtent: 280,
-        children:
-            results.images.map((image) => ImageCard(image: image)).toList(),
+      ),
+    );
+  }
+}
+
+class _ImageCard extends StatelessWidget {
+  final SearchResultImage image;
+  final VoidCallback onTap;
+
+  const _ImageCard({required this.image, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+          color: Colors.white,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            CachedNetworkImage(
+              imageUrl: image.url,
+              fit: BoxFit.cover,
+              placeholder: (context, url) =>
+                  Center(child: CircularProgressIndicator()),
+              errorWidget: (context, url, error) =>
+                  Center(child: Icon(Icons.broken_image, size: 40)),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -565,79 +785,111 @@ class ResultCard extends StatelessWidget {
 
   const ResultCard({super.key, required this.result});
 
+  String _getDomain(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return '';
+    return uri.host.replaceFirst('www.', '');
+  }
+
+  String _getFallbackFaviconText(String url) {
+    final domain = _getDomain(url);
+    return domain.isNotEmpty ? domain[0].toUpperCase() : '?';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final domain = _getDomain(result.url);
+    final fallbackChar = _getFallbackFaviconText(result.url);
 
-    return Card.outlined(
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return Material(
+      color: colorScheme.surface,
+      elevation: 2,
+      borderRadius: BorderRadius.circular(16),
+      child: Card.outlined(
+        child: InkWell(
+          onTap: null, // External tap handler in Carousel
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Favicon placeholder
-                Container(
-                  width: 24,
-                  height: 24,
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    result.url
-                        .replaceAll('https://', '')
-                        .replaceAll('http://', '')
-                        .replaceAll('www.', '')
-                        .substring(0, 1)
-                        .toUpperCase(),
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
+                // Top row: favicon + domain
+                Row(
+                  children: [
+                    // Favicon (with fallback)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Image.network(
+                        'https://www.google.com/s2/favicons?domain=$domain&sz=64',
+                        width: 28,
+                        height: 28,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) {
+                          return Container(
+                            width: 28,
+                            height: 28,
+                            color: colorScheme.surfaceVariant,
+                            alignment: Alignment.center,
+                            child: Text(
+                              fallbackChar,
+                              style: theme.textTheme.labelLarge?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
+
+                    const SizedBox(width: 10),
+
+                    // Domain name
+                    Expanded(
+                      child: Text(
+                        domain,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
-                // Domain
-                Expanded(
-                  child: Text(
-                    Uri.parse(result.url).host.replaceFirst('www.', ''),
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+
+                const SizedBox(height: 12),
+
+                // Title
+                Text(
+                  result.title,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    height: 1.3,
+                    color: colorScheme.onSurface,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+
+                const SizedBox(height: 10),
+
+                // Content snippet
+                Text(
+                  result.content,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.5,
+                  ),
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-
-            // Title
-            Text(
-              result.title,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                height: 1.3,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 8),
-
-            // Content snippet
-            Text(
-              result.content,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                height: 1.5,
-              ),
-              maxLines: 4,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -664,177 +916,6 @@ Future<void> launchUrlWeb(String url) async {
     }
   } catch (e) {
     debugPrint('Error launching URL: $e');
-  }
-}
-
-class ImageCard extends StatelessWidget {
-  final SearchResultImage image;
-
-  const ImageCard({super.key, required this.image});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-      child: Container(
-        color: colorScheme.surfaceContainerHighest,
-        child: Image.network(
-          image.url,
-          fit: BoxFit.cover,
-          loadingBuilder: (context, child, progress) {
-            if (progress == null) return child;
-            return ShimmerLoading(
-              isLoading: true,
-              child: Container(color: colorScheme.surface),
-            );
-          },
-          errorBuilder:
-              (context, error, stackTrace) => Center(
-                child: Icon(
-                  Icons.broken_image_rounded,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _launchUrl(String url) async {
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-    }
-  }
-}
-
-class AIResultsWidget extends StatelessWidget {
-  final String id;
-  final SearchDao dao;
-
-  const AIResultsWidget({super.key, required this.id, required this.dao});
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<SearchDatas?>(
-      stream: dao.watchSearchData(id),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting ||
-            snapshot.hasError ||
-            !snapshot.hasData ||
-            snapshot.data == null ||
-            snapshot.data?.gemini == "" && snapshot.data?.isFailed == false) {
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Card(
-              elevation: 0,
-              margin: EdgeInsets.zero,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.outlineVariant.withOpacity(0.3),
-                  width: 1,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 20,
-                  horizontal: 16,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            "Generating summary...",
-                            style: Theme.of(
-                              context,
-                            ).textTheme.bodyLarge?.copyWith(
-                              height: 1.4,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            "We're processing your content",
-                            style: Theme.of(
-                              context,
-                            ).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withOpacity(0.6),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }
-        final data = snapshot.data!;
-        if (data.isFailed == true) {
-          return const SizedBox.shrink();
-        }
-        if (data.gemini == null) {
-          return const SizedBox.shrink();
-        }
-
-        return Skeletonizer(
-          enabled:
-              snapshot.connectionState == ConnectionState.waiting ||
-              snapshot.hasError ||
-              !snapshot.hasData ||
-              snapshot.data == null ||
-              snapshot.data?.gemini == "",
-          child: Card(
-            elevation: 0,
-            margin: EdgeInsets.zero,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(
-                color: Theme.of(context).colorScheme.outlineVariant,
-                width: 1,
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: GptMarkdown(
-                onLinkTab: (url, text) async {
-                  await launchUrlWeb(url);
-                },
-                followLinkColor: true,
-                data.gemini ?? '',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyLarge?.copyWith(height: 1.6),
-              ),
-            ),
-          ),
-        );
-      },
-    );
   }
 }
 
@@ -1118,59 +1199,58 @@ class _SearchList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(8.0),
-      children:
-          groupedData.entries.map((entry) {
-            final date = entry.key;
-            final items = entry.value;
+      children: groupedData.entries.map((entry) {
+        final date = entry.key;
+        final items = entry.value;
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 8.0,
-                  ),
-                  child: Text(
-                    _formatDate(date),
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Text(
+                _formatDate(date),
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
                 ),
-                ...items
-                    .map(
-                      (search) => AnimatedListItem(
-                        index: items.indexOf(search),
-                        child: ListTile(
-                          key: ValueKey(search.id),
-                          dense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 8.0,
-                            vertical: 0.0,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          title: Text(
-                            search.query,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                          onTap: () {
-                            context.read<SearchGptCubit>().setID(search.id);
-                            Navigator.of(context).pop();
-                          },
+              ),
+            ),
+            ...items
+                .map(
+                  (search) => AnimatedListItem(
+                    index: items.indexOf(search),
+                    child: ListTile(
+                      key: ValueKey(search.id),
+                      dense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 8.0,
+                        vertical: 0.0,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      title: Text(
+                        search.query,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
-                    )
-                    .toList(),
-                const Divider(height: 16.0),
-              ],
-            );
-          }).toList(),
+                      onTap: () {
+                        context.read<SearchGptCubit>().setID(search.id);
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ),
+                )
+                .toList(),
+            const Divider(height: 16.0),
+          ],
+        );
+      }).toList(),
     );
   }
 
@@ -1234,6 +1314,154 @@ class _AIResponseLoadingState extends State<AIResponseLoading>
           const LinearProgressIndicator(
             backgroundColor: Colors.transparent,
             minHeight: 2,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class AICombinedResultsWidget extends StatelessWidget {
+  final String id;
+  final SearchDao dao;
+
+  const AICombinedResultsWidget({
+    super.key,
+    required this.id,
+    required this.dao,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<SearchDatas?>(
+      stream: dao.watchSearchData(id),
+      builder: (context, snapshot) {
+        final isLoading =
+            snapshot.connectionState == ConnectionState.waiting ||
+            snapshot.hasError ||
+            !snapshot.hasData ||
+            snapshot.data == null;
+
+        final data = snapshot.data;
+        final hasFailed = data?.isFailed == true;
+        final hasTitle = data?.gemini?.isNotEmpty == true;
+        final hasReport = data?.report?.isNotEmpty == true;
+        final isGeneratingTitle = !hasFailed && !hasTitle && !isLoading;
+        final isGeneratingReport = !hasFailed && !hasReport && !isLoading;
+
+        if (hasFailed) return const SizedBox.shrink();
+        if (!hasTitle &&
+            !hasReport &&
+            !isGeneratingTitle &&
+            !isGeneratingReport) {
+          return const SizedBox.shrink();
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 24),
+            // Title Section
+            if (isGeneratingTitle || hasTitle)
+              _buildSection(
+                context,
+                title: "Summary",
+                content: data?.gemini,
+                isLoading: isGeneratingTitle,
+              ),
+
+            if ((isGeneratingTitle || hasTitle) &&
+                (isGeneratingReport || hasReport))
+              const SizedBox(height: 24),
+
+            // Report Section
+            if (isGeneratingReport || hasReport)
+              _buildSection(
+                context,
+                title: "Detailed Report",
+                content: data?.report,
+                isLoading: isGeneratingReport,
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildSection(
+    BuildContext context, {
+    required String title,
+    required String? content,
+    required bool isLoading,
+  }) {
+    final textStyle =
+        Theme.of(context).textTheme.bodyLarge?.copyWith(
+          height: 1.6,
+          color: Theme.of(context).colorScheme.onSurface,
+        ) ??
+        const TextStyle(height: 1.6); // Fallback
+
+    final trimmedContent = (content ?? '').trim();
+
+    return isLoading
+        ? _buildLoadingIndicator(context, title)
+        : Padding(
+            padding: const EdgeInsets.all(3.0),
+            child: GptMarkdown(
+              trimmedContent,
+              textAlign: TextAlign.start,
+              onLinkTab: (url, text) async {
+                try {
+                  await launchUrlWeb(url);
+                } catch (e) {
+                  debugPrint('Failed to launch $url: $e');
+                }
+              },
+              followLinkColor: true,
+              style: textStyle,
+            ),
+          );
+  }
+
+  Widget _buildLoadingIndicator(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Generating $title...",
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    height: 1.4,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "This may take a few moments",
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

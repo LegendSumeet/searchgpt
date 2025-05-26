@@ -137,7 +137,7 @@ class Tavily {
         'include_answer': 'advanced',
         'include_domains': includeDomains,
         'exclude_domains': excludeDomains,
-        'time_range': 'day',
+        // 'time_range': 'day'r,
       },
     );
     return SearchResults.fromJson(response);

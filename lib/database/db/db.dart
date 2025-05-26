@@ -20,6 +20,16 @@ class SearchData extends Table {
   IntColumn get token => integer().named('token')();
   TextColumn get search => text().named('search').nullable()();
   TextColumn get gemini => text().named('gemini').nullable()();
+  TextColumn get curateSources => text().named('curate_sources').nullable()();
+  TextColumn get report => text().named('report').nullable()();
+  TextColumn get customReport => text().named('custom_report').nullable()();
+  TextColumn get outlineReport => text().named('outline_report').nullable()();
+  TextColumn get deepResearchReport =>
+      text().named('deep_research_report').nullable()();
+  TextColumn get summaryReport => text().named('summary_report').nullable()();
+  TextColumn get subtopicReport => text().named('subtopic_report').nullable()();
+  TextColumn get conclusionReport =>
+      text().named('conclusion_report').nullable()();
   BoolColumn get isFavorite =>
       boolean().named('is_favorite').withDefault(const Constant(false))();
   BoolColumn get isArchived =>

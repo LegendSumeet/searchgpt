@@ -1,17 +1,13 @@
-import 'dart:math';
-
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
 // ignore: depend_on_referenced_packages
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:searchgpt/config/config.dart';
+import 'package:searchgpt/config/prompt.dart';
 import 'package:searchgpt/database/dao/index.dart';
 import 'package:searchgpt/database/db/db.dart';
-import 'package:searchgpt/workflow/tavily.dart';
 import 'package:searchgpt/workflow/workflow.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
-// import 'dart:convert';
-// import 'dart:typed_data';
 
 import 'package:uuid/uuid.dart';
 part 'search_gpt_cubit.freezed.dart';
@@ -28,7 +24,7 @@ class SearchGptCubit extends Cubit<SearchGptState> {
     emit(SearchGptState.setId(id: id));
   }
 
-  void search(String query) async {
+  void search(String query, String lang) async {
     var uuid = Uuid();
     AppDatabase db = await AppDatabase.instance;
     SearchDao searchDao = db.searchDao;
@@ -59,24 +55,68 @@ class SearchGptCubit extends Cubit<SearchGptState> {
         value: convertToJsonString(results),
         columnName: "search",
       );
-      // final String formattedContent = buildGeminiPromptFromSearchResults(
-      //   results,
-      //   query,
-      // );
-      // final model = GenerativeModel(
-      //   model: 'gemini-1.5-pro',
-      //   apiKey: 'AIzaSyCIHrD0b9A3NI6O5aNYQ1pLhaksq9MWxCg',
-      // );
-      // final content = [Content.text(formattedContent)];
-      // final response = await model.generateContent(content);
+      debugPrint('Search results ${convertToJsonString(results)}');
+      final model = GenerativeModel(
+        model: 'gemini-2.0-flash',
+        apiKey: 'AIzaSyCIHrD0b9A3NI6O5aNYQ1pLhaksq9MWxCg',
+      );
 
-      // // Safely extract the generated text
-      // final text = response.text ?? '';
+      ///TITLE GENERATION
+      final titlePrompt = PromptFamily.generateReportIntroduction(
+        question: query,
+        researchSummary: results.answer,
+        language: lang,
+      );
+
+      final content = [Content.text(titlePrompt)];
+      final response = await model.generateContent(content);
+      final reportTitle = response.text ?? '';
 
       searchDao.updateFieldById(
         id: id,
-        value: results.answer,
+        value: reportTitle,
         columnName: "gemini",
+      );
+      final readableContext = results.results
+          .map(
+            (e) =>
+                '''
+      Title: ${e.title}
+      URL: ${e.url}
+      Content: ${e.content}
+      Score: ${e.score?.toStringAsFixed(2) ?? 'N/A'}
+      ''',
+          )
+          .join('\n\n');
+      final readableContextSource = results.results
+          .map(
+            (e) =>
+                '''
+          Title: ${e.title}
+          URL: ${e.url}
+          Score: ${e.score?.toStringAsFixed(2) ?? 'N/A'}
+          ''',
+          )
+          .join('\n\n');
+
+      ///REPORT GENERATION
+      final reportPrompt = PromptFamily.generateReportPrompt(
+        question: query,
+        context: readableContext,
+        reportSource: readableContextSource,
+        language: lang,
+      );
+      debugPrint(reportPrompt);
+      final reportContentContent = [Content.text(reportPrompt)];
+      final reportContentResponse = await model.generateContent(
+        reportContentContent,
+      );
+      final reportContent = reportContentResponse.text ?? '';
+
+      searchDao.updateFieldById(
+        id: id,
+        value: reportContent,
+        columnName: "report",
       );
     } catch (error) {
       searchDao.updateFieldById(id: id, value: 1, columnName: "is_failed");
@@ -101,24 +141,66 @@ class SearchGptCubit extends Cubit<SearchGptState> {
         value: convertToJsonString(results),
         columnName: "search",
       );
-      // final String formattedContent = buildGeminiPromptFromSearchResults(
-      //   results,
-      //   searchData.query,
-      // );
-      // final model = GenerativeModel(
-      //   model: 'gemini-2.0-flash',
-      //   apiKey: 'AIzaSyCweP152s9zgdEC5j82HMQaCvPRuvyXu0Q',
-      // );
-      // final content = [Content.text(formattedContent)];
-      // final response = await model.generateContent(content);
 
-      // // Safely extract the generated text
-      // final text = response.text ?? '';
+      final model = GenerativeModel(
+        model: 'gemini-2.0-flash',
+        apiKey: 'AIzaSyCIHrD0b9A3NI6O5aNYQ1pLhaksq9MWxCg',
+      );
+
+      ///TITLE GENERATION
+      final titlePrompt = PromptFamily.generateReportIntroduction(
+        question: searchData.query,
+        researchSummary: results.answer,
+      );
+
+      final content = [Content.text(titlePrompt)];
+      final response = await model.generateContent(content);
+      final reportTitle = response.text ?? '';
 
       searchDao.updateFieldById(
         id: id,
-        value: results.answer,
+        value: reportTitle,
         columnName: "gemini",
+      );
+      final readableContext = results.results
+          .map(
+            (e) =>
+                '''
+      Title: ${e.title}
+      URL: ${e.url}
+      Content: ${e.content}
+      Score: ${e.score?.toStringAsFixed(2) ?? 'N/A'}
+      ''',
+          )
+          .join('\n\n');
+      final readableContextSource = results.results
+          .map(
+            (e) =>
+                '''
+          Title: ${e.title}
+          URL: ${e.url}
+          Score: ${e.score?.toStringAsFixed(2) ?? 'N/A'}
+          ''',
+          )
+          .join('\n\n');
+
+      ///REPORT GENERATION
+      final reportPrompt = PromptFamily.generateReportPrompt(
+        question: searchData.query,
+        context: readableContext,
+        reportSource: readableContextSource,
+      );
+      debugPrint(reportPrompt);
+      final reportContentContent = [Content.text(reportPrompt)];
+      final reportContentResponse = await model.generateContent(
+        reportContentContent,
+      );
+      final reportContent = reportContentResponse.text ?? '';
+
+      searchDao.updateFieldById(
+        id: id,
+        value: reportContent,
+        columnName: "report",
       );
     } catch (error) {
       searchDao.updateFieldById(id: id, value: 1, columnName: "is_failed");

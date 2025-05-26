@@ -3,10 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:flex_color_scheme/flex_color_scheme.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-
 /// The [AppTheme] defines light and dark themes for the app.
 ///
 /// Theme setup for FlexColorScheme package v8.

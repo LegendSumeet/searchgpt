@@ -58,6 +58,92 @@ class $SearchDataTable extends SearchData
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _curateSourcesMeta = const VerificationMeta(
+    'curateSources',
+  );
+  @override
+  late final GeneratedColumn<String> curateSources = GeneratedColumn<String>(
+    'curate_sources',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _reportMeta = const VerificationMeta('report');
+  @override
+  late final GeneratedColumn<String> report = GeneratedColumn<String>(
+    'report',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _customReportMeta = const VerificationMeta(
+    'customReport',
+  );
+  @override
+  late final GeneratedColumn<String> customReport = GeneratedColumn<String>(
+    'custom_report',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _outlineReportMeta = const VerificationMeta(
+    'outlineReport',
+  );
+  @override
+  late final GeneratedColumn<String> outlineReport = GeneratedColumn<String>(
+    'outline_report',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deepResearchReportMeta =
+      const VerificationMeta('deepResearchReport');
+  @override
+  late final GeneratedColumn<String> deepResearchReport =
+      GeneratedColumn<String>(
+        'deep_research_report',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _summaryReportMeta = const VerificationMeta(
+    'summaryReport',
+  );
+  @override
+  late final GeneratedColumn<String> summaryReport = GeneratedColumn<String>(
+    'summary_report',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _subtopicReportMeta = const VerificationMeta(
+    'subtopicReport',
+  );
+  @override
+  late final GeneratedColumn<String> subtopicReport = GeneratedColumn<String>(
+    'subtopic_report',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _conclusionReportMeta = const VerificationMeta(
+    'conclusionReport',
+  );
+  @override
+  late final GeneratedColumn<String> conclusionReport = GeneratedColumn<String>(
+    'conclusion_report',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _isFavoriteMeta = const VerificationMeta(
     'isFavorite',
   );
@@ -179,6 +265,14 @@ class $SearchDataTable extends SearchData
     token,
     search,
     gemini,
+    curateSources,
+    report,
+    customReport,
+    outlineReport,
+    deepResearchReport,
+    summaryReport,
+    subtopicReport,
+    conclusionReport,
     isFavorite,
     isArchived,
     isDeleted,
@@ -231,6 +325,75 @@ class $SearchDataTable extends SearchData
       context.handle(
         _geminiMeta,
         gemini.isAcceptableOrUnknown(data['gemini']!, _geminiMeta),
+      );
+    }
+    if (data.containsKey('curate_sources')) {
+      context.handle(
+        _curateSourcesMeta,
+        curateSources.isAcceptableOrUnknown(
+          data['curate_sources']!,
+          _curateSourcesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('report')) {
+      context.handle(
+        _reportMeta,
+        report.isAcceptableOrUnknown(data['report']!, _reportMeta),
+      );
+    }
+    if (data.containsKey('custom_report')) {
+      context.handle(
+        _customReportMeta,
+        customReport.isAcceptableOrUnknown(
+          data['custom_report']!,
+          _customReportMeta,
+        ),
+      );
+    }
+    if (data.containsKey('outline_report')) {
+      context.handle(
+        _outlineReportMeta,
+        outlineReport.isAcceptableOrUnknown(
+          data['outline_report']!,
+          _outlineReportMeta,
+        ),
+      );
+    }
+    if (data.containsKey('deep_research_report')) {
+      context.handle(
+        _deepResearchReportMeta,
+        deepResearchReport.isAcceptableOrUnknown(
+          data['deep_research_report']!,
+          _deepResearchReportMeta,
+        ),
+      );
+    }
+    if (data.containsKey('summary_report')) {
+      context.handle(
+        _summaryReportMeta,
+        summaryReport.isAcceptableOrUnknown(
+          data['summary_report']!,
+          _summaryReportMeta,
+        ),
+      );
+    }
+    if (data.containsKey('subtopic_report')) {
+      context.handle(
+        _subtopicReportMeta,
+        subtopicReport.isAcceptableOrUnknown(
+          data['subtopic_report']!,
+          _subtopicReportMeta,
+        ),
+      );
+    }
+    if (data.containsKey('conclusion_report')) {
+      context.handle(
+        _conclusionReportMeta,
+        conclusionReport.isAcceptableOrUnknown(
+          data['conclusion_report']!,
+          _conclusionReportMeta,
+        ),
       );
     }
     if (data.containsKey('is_favorite')) {
@@ -290,21 +453,18 @@ class $SearchDataTable extends SearchData
   SearchDatas map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return SearchDatas(
-      id:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}id'],
-          )!,
-      query:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}query'],
-          )!,
-      token:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
-            data['${effectivePrefix}token'],
-          )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      query: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}query'],
+      )!,
+      token: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}token'],
+      )!,
       search: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}search'],
@@ -313,46 +473,70 @@ class $SearchDataTable extends SearchData
         DriftSqlType.string,
         data['${effectivePrefix}gemini'],
       ),
-      isFavorite:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.bool,
-            data['${effectivePrefix}is_favorite'],
-          )!,
-      isArchived:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.bool,
-            data['${effectivePrefix}is_archived'],
-          )!,
-      isDeleted:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.bool,
-            data['${effectivePrefix}is_deleted'],
-          )!,
-      isPinned:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.bool,
-            data['${effectivePrefix}is_pinned'],
-          )!,
-      isStarred:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.bool,
-            data['${effectivePrefix}is_starred'],
-          )!,
-      isFailed:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.bool,
-            data['${effectivePrefix}is_failed'],
-          )!,
-      createdAt:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.dateTime,
-            data['${effectivePrefix}created_at'],
-          )!,
-      updatedAt:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.dateTime,
-            data['${effectivePrefix}updated_at'],
-          )!,
+      curateSources: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}curate_sources'],
+      ),
+      report: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}report'],
+      ),
+      customReport: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}custom_report'],
+      ),
+      outlineReport: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}outline_report'],
+      ),
+      deepResearchReport: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}deep_research_report'],
+      ),
+      summaryReport: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}summary_report'],
+      ),
+      subtopicReport: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}subtopic_report'],
+      ),
+      conclusionReport: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}conclusion_report'],
+      ),
+      isFavorite: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_favorite'],
+      )!,
+      isArchived: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_archived'],
+      )!,
+      isDeleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_deleted'],
+      )!,
+      isPinned: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_pinned'],
+      )!,
+      isStarred: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_starred'],
+      )!,
+      isFailed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_failed'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
     );
   }
 
@@ -368,6 +552,14 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
   final int token;
   final String? search;
   final String? gemini;
+  final String? curateSources;
+  final String? report;
+  final String? customReport;
+  final String? outlineReport;
+  final String? deepResearchReport;
+  final String? summaryReport;
+  final String? subtopicReport;
+  final String? conclusionReport;
   final bool isFavorite;
   final bool isArchived;
   final bool isDeleted;
@@ -382,6 +574,14 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
     required this.token,
     this.search,
     this.gemini,
+    this.curateSources,
+    this.report,
+    this.customReport,
+    this.outlineReport,
+    this.deepResearchReport,
+    this.summaryReport,
+    this.subtopicReport,
+    this.conclusionReport,
     required this.isFavorite,
     required this.isArchived,
     required this.isDeleted,
@@ -403,6 +603,30 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
     if (!nullToAbsent || gemini != null) {
       map['gemini'] = Variable<String>(gemini);
     }
+    if (!nullToAbsent || curateSources != null) {
+      map['curate_sources'] = Variable<String>(curateSources);
+    }
+    if (!nullToAbsent || report != null) {
+      map['report'] = Variable<String>(report);
+    }
+    if (!nullToAbsent || customReport != null) {
+      map['custom_report'] = Variable<String>(customReport);
+    }
+    if (!nullToAbsent || outlineReport != null) {
+      map['outline_report'] = Variable<String>(outlineReport);
+    }
+    if (!nullToAbsent || deepResearchReport != null) {
+      map['deep_research_report'] = Variable<String>(deepResearchReport);
+    }
+    if (!nullToAbsent || summaryReport != null) {
+      map['summary_report'] = Variable<String>(summaryReport);
+    }
+    if (!nullToAbsent || subtopicReport != null) {
+      map['subtopic_report'] = Variable<String>(subtopicReport);
+    }
+    if (!nullToAbsent || conclusionReport != null) {
+      map['conclusion_report'] = Variable<String>(conclusionReport);
+    }
     map['is_favorite'] = Variable<bool>(isFavorite);
     map['is_archived'] = Variable<bool>(isArchived);
     map['is_deleted'] = Variable<bool>(isDeleted);
@@ -419,10 +643,36 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
       id: Value(id),
       query: Value(query),
       token: Value(token),
-      search:
-          search == null && nullToAbsent ? const Value.absent() : Value(search),
-      gemini:
-          gemini == null && nullToAbsent ? const Value.absent() : Value(gemini),
+      search: search == null && nullToAbsent
+          ? const Value.absent()
+          : Value(search),
+      gemini: gemini == null && nullToAbsent
+          ? const Value.absent()
+          : Value(gemini),
+      curateSources: curateSources == null && nullToAbsent
+          ? const Value.absent()
+          : Value(curateSources),
+      report: report == null && nullToAbsent
+          ? const Value.absent()
+          : Value(report),
+      customReport: customReport == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customReport),
+      outlineReport: outlineReport == null && nullToAbsent
+          ? const Value.absent()
+          : Value(outlineReport),
+      deepResearchReport: deepResearchReport == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deepResearchReport),
+      summaryReport: summaryReport == null && nullToAbsent
+          ? const Value.absent()
+          : Value(summaryReport),
+      subtopicReport: subtopicReport == null && nullToAbsent
+          ? const Value.absent()
+          : Value(subtopicReport),
+      conclusionReport: conclusionReport == null && nullToAbsent
+          ? const Value.absent()
+          : Value(conclusionReport),
       isFavorite: Value(isFavorite),
       isArchived: Value(isArchived),
       isDeleted: Value(isDeleted),
@@ -445,6 +695,16 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
       token: serializer.fromJson<int>(json['token']),
       search: serializer.fromJson<String?>(json['search']),
       gemini: serializer.fromJson<String?>(json['gemini']),
+      curateSources: serializer.fromJson<String?>(json['curateSources']),
+      report: serializer.fromJson<String?>(json['report']),
+      customReport: serializer.fromJson<String?>(json['customReport']),
+      outlineReport: serializer.fromJson<String?>(json['outlineReport']),
+      deepResearchReport: serializer.fromJson<String?>(
+        json['deepResearchReport'],
+      ),
+      summaryReport: serializer.fromJson<String?>(json['summaryReport']),
+      subtopicReport: serializer.fromJson<String?>(json['subtopicReport']),
+      conclusionReport: serializer.fromJson<String?>(json['conclusionReport']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       isArchived: serializer.fromJson<bool>(json['isArchived']),
       isDeleted: serializer.fromJson<bool>(json['isDeleted']),
@@ -464,6 +724,14 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
       'token': serializer.toJson<int>(token),
       'search': serializer.toJson<String?>(search),
       'gemini': serializer.toJson<String?>(gemini),
+      'curateSources': serializer.toJson<String?>(curateSources),
+      'report': serializer.toJson<String?>(report),
+      'customReport': serializer.toJson<String?>(customReport),
+      'outlineReport': serializer.toJson<String?>(outlineReport),
+      'deepResearchReport': serializer.toJson<String?>(deepResearchReport),
+      'summaryReport': serializer.toJson<String?>(summaryReport),
+      'subtopicReport': serializer.toJson<String?>(subtopicReport),
+      'conclusionReport': serializer.toJson<String?>(conclusionReport),
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'isArchived': serializer.toJson<bool>(isArchived),
       'isDeleted': serializer.toJson<bool>(isDeleted),
@@ -481,6 +749,14 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
     int? token,
     Value<String?> search = const Value.absent(),
     Value<String?> gemini = const Value.absent(),
+    Value<String?> curateSources = const Value.absent(),
+    Value<String?> report = const Value.absent(),
+    Value<String?> customReport = const Value.absent(),
+    Value<String?> outlineReport = const Value.absent(),
+    Value<String?> deepResearchReport = const Value.absent(),
+    Value<String?> summaryReport = const Value.absent(),
+    Value<String?> subtopicReport = const Value.absent(),
+    Value<String?> conclusionReport = const Value.absent(),
     bool? isFavorite,
     bool? isArchived,
     bool? isDeleted,
@@ -495,6 +771,26 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
     token: token ?? this.token,
     search: search.present ? search.value : this.search,
     gemini: gemini.present ? gemini.value : this.gemini,
+    curateSources: curateSources.present
+        ? curateSources.value
+        : this.curateSources,
+    report: report.present ? report.value : this.report,
+    customReport: customReport.present ? customReport.value : this.customReport,
+    outlineReport: outlineReport.present
+        ? outlineReport.value
+        : this.outlineReport,
+    deepResearchReport: deepResearchReport.present
+        ? deepResearchReport.value
+        : this.deepResearchReport,
+    summaryReport: summaryReport.present
+        ? summaryReport.value
+        : this.summaryReport,
+    subtopicReport: subtopicReport.present
+        ? subtopicReport.value
+        : this.subtopicReport,
+    conclusionReport: conclusionReport.present
+        ? conclusionReport.value
+        : this.conclusionReport,
     isFavorite: isFavorite ?? this.isFavorite,
     isArchived: isArchived ?? this.isArchived,
     isDeleted: isDeleted ?? this.isDeleted,
@@ -511,10 +807,34 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
       token: data.token.present ? data.token.value : this.token,
       search: data.search.present ? data.search.value : this.search,
       gemini: data.gemini.present ? data.gemini.value : this.gemini,
-      isFavorite:
-          data.isFavorite.present ? data.isFavorite.value : this.isFavorite,
-      isArchived:
-          data.isArchived.present ? data.isArchived.value : this.isArchived,
+      curateSources: data.curateSources.present
+          ? data.curateSources.value
+          : this.curateSources,
+      report: data.report.present ? data.report.value : this.report,
+      customReport: data.customReport.present
+          ? data.customReport.value
+          : this.customReport,
+      outlineReport: data.outlineReport.present
+          ? data.outlineReport.value
+          : this.outlineReport,
+      deepResearchReport: data.deepResearchReport.present
+          ? data.deepResearchReport.value
+          : this.deepResearchReport,
+      summaryReport: data.summaryReport.present
+          ? data.summaryReport.value
+          : this.summaryReport,
+      subtopicReport: data.subtopicReport.present
+          ? data.subtopicReport.value
+          : this.subtopicReport,
+      conclusionReport: data.conclusionReport.present
+          ? data.conclusionReport.value
+          : this.conclusionReport,
+      isFavorite: data.isFavorite.present
+          ? data.isFavorite.value
+          : this.isFavorite,
+      isArchived: data.isArchived.present
+          ? data.isArchived.value
+          : this.isArchived,
       isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
       isPinned: data.isPinned.present ? data.isPinned.value : this.isPinned,
       isStarred: data.isStarred.present ? data.isStarred.value : this.isStarred,
@@ -532,6 +852,14 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
           ..write('token: $token, ')
           ..write('search: $search, ')
           ..write('gemini: $gemini, ')
+          ..write('curateSources: $curateSources, ')
+          ..write('report: $report, ')
+          ..write('customReport: $customReport, ')
+          ..write('outlineReport: $outlineReport, ')
+          ..write('deepResearchReport: $deepResearchReport, ')
+          ..write('summaryReport: $summaryReport, ')
+          ..write('subtopicReport: $subtopicReport, ')
+          ..write('conclusionReport: $conclusionReport, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('isArchived: $isArchived, ')
           ..write('isDeleted: $isDeleted, ')
@@ -545,12 +873,20 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     query,
     token,
     search,
     gemini,
+    curateSources,
+    report,
+    customReport,
+    outlineReport,
+    deepResearchReport,
+    summaryReport,
+    subtopicReport,
+    conclusionReport,
     isFavorite,
     isArchived,
     isDeleted,
@@ -559,7 +895,7 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
     isFailed,
     createdAt,
     updatedAt,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -569,6 +905,14 @@ class SearchDatas extends DataClass implements Insertable<SearchDatas> {
           other.token == this.token &&
           other.search == this.search &&
           other.gemini == this.gemini &&
+          other.curateSources == this.curateSources &&
+          other.report == this.report &&
+          other.customReport == this.customReport &&
+          other.outlineReport == this.outlineReport &&
+          other.deepResearchReport == this.deepResearchReport &&
+          other.summaryReport == this.summaryReport &&
+          other.subtopicReport == this.subtopicReport &&
+          other.conclusionReport == this.conclusionReport &&
           other.isFavorite == this.isFavorite &&
           other.isArchived == this.isArchived &&
           other.isDeleted == this.isDeleted &&
@@ -585,6 +929,14 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
   final Value<int> token;
   final Value<String?> search;
   final Value<String?> gemini;
+  final Value<String?> curateSources;
+  final Value<String?> report;
+  final Value<String?> customReport;
+  final Value<String?> outlineReport;
+  final Value<String?> deepResearchReport;
+  final Value<String?> summaryReport;
+  final Value<String?> subtopicReport;
+  final Value<String?> conclusionReport;
   final Value<bool> isFavorite;
   final Value<bool> isArchived;
   final Value<bool> isDeleted;
@@ -600,6 +952,14 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
     this.token = const Value.absent(),
     this.search = const Value.absent(),
     this.gemini = const Value.absent(),
+    this.curateSources = const Value.absent(),
+    this.report = const Value.absent(),
+    this.customReport = const Value.absent(),
+    this.outlineReport = const Value.absent(),
+    this.deepResearchReport = const Value.absent(),
+    this.summaryReport = const Value.absent(),
+    this.subtopicReport = const Value.absent(),
+    this.conclusionReport = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.isArchived = const Value.absent(),
     this.isDeleted = const Value.absent(),
@@ -616,6 +976,14 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
     required int token,
     this.search = const Value.absent(),
     this.gemini = const Value.absent(),
+    this.curateSources = const Value.absent(),
+    this.report = const Value.absent(),
+    this.customReport = const Value.absent(),
+    this.outlineReport = const Value.absent(),
+    this.deepResearchReport = const Value.absent(),
+    this.summaryReport = const Value.absent(),
+    this.subtopicReport = const Value.absent(),
+    this.conclusionReport = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.isArchived = const Value.absent(),
     this.isDeleted = const Value.absent(),
@@ -634,6 +1002,14 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
     Expression<int>? token,
     Expression<String>? search,
     Expression<String>? gemini,
+    Expression<String>? curateSources,
+    Expression<String>? report,
+    Expression<String>? customReport,
+    Expression<String>? outlineReport,
+    Expression<String>? deepResearchReport,
+    Expression<String>? summaryReport,
+    Expression<String>? subtopicReport,
+    Expression<String>? conclusionReport,
     Expression<bool>? isFavorite,
     Expression<bool>? isArchived,
     Expression<bool>? isDeleted,
@@ -650,6 +1026,15 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
       if (token != null) 'token': token,
       if (search != null) 'search': search,
       if (gemini != null) 'gemini': gemini,
+      if (curateSources != null) 'curate_sources': curateSources,
+      if (report != null) 'report': report,
+      if (customReport != null) 'custom_report': customReport,
+      if (outlineReport != null) 'outline_report': outlineReport,
+      if (deepResearchReport != null)
+        'deep_research_report': deepResearchReport,
+      if (summaryReport != null) 'summary_report': summaryReport,
+      if (subtopicReport != null) 'subtopic_report': subtopicReport,
+      if (conclusionReport != null) 'conclusion_report': conclusionReport,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (isArchived != null) 'is_archived': isArchived,
       if (isDeleted != null) 'is_deleted': isDeleted,
@@ -668,6 +1053,14 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
     Value<int>? token,
     Value<String?>? search,
     Value<String?>? gemini,
+    Value<String?>? curateSources,
+    Value<String?>? report,
+    Value<String?>? customReport,
+    Value<String?>? outlineReport,
+    Value<String?>? deepResearchReport,
+    Value<String?>? summaryReport,
+    Value<String?>? subtopicReport,
+    Value<String?>? conclusionReport,
     Value<bool>? isFavorite,
     Value<bool>? isArchived,
     Value<bool>? isDeleted,
@@ -684,6 +1077,14 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
       token: token ?? this.token,
       search: search ?? this.search,
       gemini: gemini ?? this.gemini,
+      curateSources: curateSources ?? this.curateSources,
+      report: report ?? this.report,
+      customReport: customReport ?? this.customReport,
+      outlineReport: outlineReport ?? this.outlineReport,
+      deepResearchReport: deepResearchReport ?? this.deepResearchReport,
+      summaryReport: summaryReport ?? this.summaryReport,
+      subtopicReport: subtopicReport ?? this.subtopicReport,
+      conclusionReport: conclusionReport ?? this.conclusionReport,
       isFavorite: isFavorite ?? this.isFavorite,
       isArchived: isArchived ?? this.isArchived,
       isDeleted: isDeleted ?? this.isDeleted,
@@ -713,6 +1114,30 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
     }
     if (gemini.present) {
       map['gemini'] = Variable<String>(gemini.value);
+    }
+    if (curateSources.present) {
+      map['curate_sources'] = Variable<String>(curateSources.value);
+    }
+    if (report.present) {
+      map['report'] = Variable<String>(report.value);
+    }
+    if (customReport.present) {
+      map['custom_report'] = Variable<String>(customReport.value);
+    }
+    if (outlineReport.present) {
+      map['outline_report'] = Variable<String>(outlineReport.value);
+    }
+    if (deepResearchReport.present) {
+      map['deep_research_report'] = Variable<String>(deepResearchReport.value);
+    }
+    if (summaryReport.present) {
+      map['summary_report'] = Variable<String>(summaryReport.value);
+    }
+    if (subtopicReport.present) {
+      map['subtopic_report'] = Variable<String>(subtopicReport.value);
+    }
+    if (conclusionReport.present) {
+      map['conclusion_report'] = Variable<String>(conclusionReport.value);
     }
     if (isFavorite.present) {
       map['is_favorite'] = Variable<bool>(isFavorite.value);
@@ -752,6 +1177,14 @@ class SearchDataCompanion extends UpdateCompanion<SearchDatas> {
           ..write('token: $token, ')
           ..write('search: $search, ')
           ..write('gemini: $gemini, ')
+          ..write('curateSources: $curateSources, ')
+          ..write('report: $report, ')
+          ..write('customReport: $customReport, ')
+          ..write('outlineReport: $outlineReport, ')
+          ..write('deepResearchReport: $deepResearchReport, ')
+          ..write('summaryReport: $summaryReport, ')
+          ..write('subtopicReport: $subtopicReport, ')
+          ..write('conclusionReport: $conclusionReport, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('isArchived: $isArchived, ')
           ..write('isDeleted: $isDeleted, ')
@@ -785,6 +1218,14 @@ typedef $$SearchDataTableCreateCompanionBuilder =
       required int token,
       Value<String?> search,
       Value<String?> gemini,
+      Value<String?> curateSources,
+      Value<String?> report,
+      Value<String?> customReport,
+      Value<String?> outlineReport,
+      Value<String?> deepResearchReport,
+      Value<String?> summaryReport,
+      Value<String?> subtopicReport,
+      Value<String?> conclusionReport,
       Value<bool> isFavorite,
       Value<bool> isArchived,
       Value<bool> isDeleted,
@@ -802,6 +1243,14 @@ typedef $$SearchDataTableUpdateCompanionBuilder =
       Value<int> token,
       Value<String?> search,
       Value<String?> gemini,
+      Value<String?> curateSources,
+      Value<String?> report,
+      Value<String?> customReport,
+      Value<String?> outlineReport,
+      Value<String?> deepResearchReport,
+      Value<String?> summaryReport,
+      Value<String?> subtopicReport,
+      Value<String?> conclusionReport,
       Value<bool> isFavorite,
       Value<bool> isArchived,
       Value<bool> isDeleted,
@@ -844,6 +1293,46 @@ class $$SearchDataTableFilterComposer
 
   ColumnFilters<String> get gemini => $composableBuilder(
     column: $table.gemini,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get curateSources => $composableBuilder(
+    column: $table.curateSources,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get report => $composableBuilder(
+    column: $table.report,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customReport => $composableBuilder(
+    column: $table.customReport,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get outlineReport => $composableBuilder(
+    column: $table.outlineReport,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deepResearchReport => $composableBuilder(
+    column: $table.deepResearchReport,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get summaryReport => $composableBuilder(
+    column: $table.summaryReport,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get subtopicReport => $composableBuilder(
+    column: $table.subtopicReport,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get conclusionReport => $composableBuilder(
+    column: $table.conclusionReport,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -922,6 +1411,46 @@ class $$SearchDataTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get curateSources => $composableBuilder(
+    column: $table.curateSources,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get report => $composableBuilder(
+    column: $table.report,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customReport => $composableBuilder(
+    column: $table.customReport,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get outlineReport => $composableBuilder(
+    column: $table.outlineReport,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deepResearchReport => $composableBuilder(
+    column: $table.deepResearchReport,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get summaryReport => $composableBuilder(
+    column: $table.summaryReport,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get subtopicReport => $composableBuilder(
+    column: $table.subtopicReport,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get conclusionReport => $composableBuilder(
+    column: $table.conclusionReport,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get isFavorite => $composableBuilder(
     column: $table.isFavorite,
     builder: (column) => ColumnOrderings(column),
@@ -987,6 +1516,44 @@ class $$SearchDataTableAnnotationComposer
   GeneratedColumn<String> get gemini =>
       $composableBuilder(column: $table.gemini, builder: (column) => column);
 
+  GeneratedColumn<String> get curateSources => $composableBuilder(
+    column: $table.curateSources,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get report =>
+      $composableBuilder(column: $table.report, builder: (column) => column);
+
+  GeneratedColumn<String> get customReport => $composableBuilder(
+    column: $table.customReport,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get outlineReport => $composableBuilder(
+    column: $table.outlineReport,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get deepResearchReport => $composableBuilder(
+    column: $table.deepResearchReport,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get summaryReport => $composableBuilder(
+    column: $table.summaryReport,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get subtopicReport => $composableBuilder(
+    column: $table.subtopicReport,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get conclusionReport => $composableBuilder(
+    column: $table.conclusionReport,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get isFavorite => $composableBuilder(
     column: $table.isFavorite,
     builder: (column) => column,
@@ -1039,12 +1606,12 @@ class $$SearchDataTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer:
-              () => $$SearchDataTableFilterComposer($db: db, $table: table),
-          createOrderingComposer:
-              () => $$SearchDataTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer:
-              () => $$SearchDataTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () =>
+              $$SearchDataTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SearchDataTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SearchDataTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -1052,6 +1619,14 @@ class $$SearchDataTableTableManager
                 Value<int> token = const Value.absent(),
                 Value<String?> search = const Value.absent(),
                 Value<String?> gemini = const Value.absent(),
+                Value<String?> curateSources = const Value.absent(),
+                Value<String?> report = const Value.absent(),
+                Value<String?> customReport = const Value.absent(),
+                Value<String?> outlineReport = const Value.absent(),
+                Value<String?> deepResearchReport = const Value.absent(),
+                Value<String?> summaryReport = const Value.absent(),
+                Value<String?> subtopicReport = const Value.absent(),
+                Value<String?> conclusionReport = const Value.absent(),
                 Value<bool> isFavorite = const Value.absent(),
                 Value<bool> isArchived = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
@@ -1067,6 +1642,14 @@ class $$SearchDataTableTableManager
                 token: token,
                 search: search,
                 gemini: gemini,
+                curateSources: curateSources,
+                report: report,
+                customReport: customReport,
+                outlineReport: outlineReport,
+                deepResearchReport: deepResearchReport,
+                summaryReport: summaryReport,
+                subtopicReport: subtopicReport,
+                conclusionReport: conclusionReport,
                 isFavorite: isFavorite,
                 isArchived: isArchived,
                 isDeleted: isDeleted,
@@ -1084,6 +1667,14 @@ class $$SearchDataTableTableManager
                 required int token,
                 Value<String?> search = const Value.absent(),
                 Value<String?> gemini = const Value.absent(),
+                Value<String?> curateSources = const Value.absent(),
+                Value<String?> report = const Value.absent(),
+                Value<String?> customReport = const Value.absent(),
+                Value<String?> outlineReport = const Value.absent(),
+                Value<String?> deepResearchReport = const Value.absent(),
+                Value<String?> summaryReport = const Value.absent(),
+                Value<String?> subtopicReport = const Value.absent(),
+                Value<String?> conclusionReport = const Value.absent(),
                 Value<bool> isFavorite = const Value.absent(),
                 Value<bool> isArchived = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
@@ -1099,6 +1690,14 @@ class $$SearchDataTableTableManager
                 token: token,
                 search: search,
                 gemini: gemini,
+                curateSources: curateSources,
+                report: report,
+                customReport: customReport,
+                outlineReport: outlineReport,
+                deepResearchReport: deepResearchReport,
+                summaryReport: summaryReport,
+                subtopicReport: subtopicReport,
+                conclusionReport: conclusionReport,
                 isFavorite: isFavorite,
                 isArchived: isArchived,
                 isDeleted: isDeleted,
@@ -1109,16 +1708,9 @@ class $$SearchDataTableTableManager
                 updatedAt: updatedAt,
                 rowid: rowid,
               ),
-          withReferenceMapper:
-              (p0) =>
-                  p0
-                      .map(
-                        (e) => (
-                          e.readTable(table),
-                          BaseReferences(db, table, e),
-                        ),
-                      )
-                      .toList(),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
           prefetchHooksCallback: null,
         ),
       );
