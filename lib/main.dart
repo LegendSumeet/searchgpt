@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:searchgpt/auth/auth_bloc.dart';
 import 'package:searchgpt/auth/auth_event.dart';
 import 'package:searchgpt/auth/auth_repository.dart';
+import 'package:searchgpt/auth/auth_screen.dart';
 import 'package:searchgpt/auth/auth_wrapper.dart';
 import 'package:searchgpt/database/db/db.dart';
 import 'package:searchgpt/screens/home/chat.dart';
@@ -49,7 +50,7 @@ class MyApp extends StatelessWidget {
           home: AuthWrapper(
             db: db,
             authenticated: ChatScreenPage(db: db),
-            unauthenticated: ChatScreenPage(db: db),
+            unauthenticated: LoginScreen(),
           ),
         ),
       ),
