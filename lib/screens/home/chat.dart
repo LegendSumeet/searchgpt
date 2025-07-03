@@ -1410,7 +1410,7 @@ class AICombinedResultsWidget extends StatelessWidget {
             child: GptMarkdown(
               trimmedContent,
               textAlign: TextAlign.start,
-              onLinkTab: (url, text) async {
+              onLinkTap: (url, text) async {
                 try {
                   await launchUrlWeb(url);
                 } catch (e) {
